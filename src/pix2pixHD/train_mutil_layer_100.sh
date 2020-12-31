@@ -3,8 +3,8 @@ CUDA_VISIBLE_DEVICES=0 python my_train_img2map_inputsegresult_jointDL1_connect_f
 --save /data/multilayer_map_project/out_mutil_layer100 \
 --gpu 1 \
 --epochs 100 \
---batch_size 4 \
---test_batch_size 2 \
+--batch_size 8 \
+--test_batch_size 4 \
 --loadSize 256 \
 --fineSize 256 \
 --crop_size 256 \
