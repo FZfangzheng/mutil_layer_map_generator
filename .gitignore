@@ -1,0 +1,5 @@
+/scripts/tf_to_torch
+/src/pix2pixHD/deeplabv3/pretrained_models
+/src/pix2pixHD/*.log
+/src/pix2pixHD/save_old_file
+/src/pix2pixHD/xception_pytorch_imagenet.pth
