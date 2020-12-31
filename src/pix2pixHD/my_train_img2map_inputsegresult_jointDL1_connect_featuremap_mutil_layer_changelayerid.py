@@ -284,12 +284,12 @@ def train(args, get_dataloader_func=get_pix2pix_maps_dataloader):
             imgs_plus = torch.cat((imgs_plus_old,id_layer.float()),1)
             # train the Discriminator
             D_optimizer.zero_grad()
-            reals_maps = torch.cat([imgs.float(), maps.float(), id_layer.float()], dim=1)
-            # reals_maps = torch.cat([imgs.float(), maps.float()], dim=1)
+            # reals_maps = torch.cat([imgs.float(), maps.float(), id_layer.float()], dim=1)
+            reals_maps = torch.cat([imgs.float(), maps.float()], dim=1)
 
             fakes = G(imgs_plus).detach()
-            fakes_maps = torch.cat([imgs.float(), fakes.float(), id_layer.float()], dim=1)
-            # fakes_maps = torch.cat([imgs.float(), fakes.float()], dim=1)
+            # fakes_maps = torch.cat([imgs.float(), fakes.float(), id_layer.float()], dim=1)
+            fakes_maps = torch.cat([imgs.float(), fakes.float()], dim=1)
 
             D_real_outs = D(reals_maps)
             D_real_loss = GANLoss(D_real_outs, True)
@@ -306,8 +306,8 @@ def train(args, get_dataloader_func=get_pix2pix_maps_dataloader):
             # train generator and encoder
             # G_optimizer.zero_grad()
             fakes = G(imgs_plus)
-            fakes_maps = torch.cat([imgs.float(), fakes.float(), id_layer.float()], dim=1)
-            # fakes_maps = torch.cat([imgs.float(), fakes.float()], dim=1)
+            # fakes_maps = torch.cat([imgs.float(), fakes.float(), id_layer.float()], dim=1)
+            fakes_maps = torch.cat([imgs.float(), fakes.float()], dim=1)
             D_fake_outs = D(fakes_maps)
 
             gan_loss = GANLoss(D_fake_outs, True)

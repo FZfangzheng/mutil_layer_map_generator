@@ -36,7 +36,8 @@ def get_G(args, input_nc=None):
             input_nc += 1
         if args.feat_num > 0:
             input_nc += args.feat_num
-    input_nc += 1
+    if args.if_mutil_layer:
+        input_nc +=1
     norm_layer = get_norm_layer(norm_type=args.norm)
     if args.netG == 'global':
         netG = GlobalGenerator(input_nc, args.output_nc, args.ngf, args.n_downsample_global, args.n_blocks_global,
@@ -69,7 +70,8 @@ def get_D(args, input_nc=None):
         input_nc = args.input_nc + args.output_nc
         if args.use_instance:
             input_nc += 1
-    input_nc +=1
+    if args.if_mutil_layer:
+        input_nc +=1
     norm_layer = get_norm_layer(norm_type=args.norm)
     netD = MultiscaleDiscriminator(input_nc, args.ndf, args.n_layers_D, norm_layer, args.use_lsgan, args.num_D,
                                    args.use_ganFeat_loss)
