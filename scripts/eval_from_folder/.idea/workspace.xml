@@ -1,0 +1,595 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="54015893-77c9-4622-8a82-16cd17afc1ee" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/MSE.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/SSIM.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/SSIM_detail.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/eval/evaler.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/eval/utils.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/eval_more_from_folder.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/fid/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/fid/fid_score.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/fid/inception.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/fid/inceptionV3_pretrain_dict.pth" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/psnr-ssim-2.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/skimage_scores.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../find_a_img/MSE.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../find_a_img/find_a_img.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../gt重绘/remove_noise_p2pdata.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../gt重绘/rgb2gray.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../gt重绘/seg2gt.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../gt重绘/seg2gt_2.0.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../gt重绘/seg2gt_p2pdata.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../gt重绘/seg2seg.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../img_classify/根据json拷贝图片.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../img_classify/根据txt拷贝图片.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../img_rename/img_rename.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../img_resize/img_resize.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../iou_from_folder/eval_iou_source_code.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../iou_from_folder/iou_from_folder.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../make_big_map/make_big_map.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../make_overlap_map/图片拼合放大.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../make_seg_map/k-means-alldataset.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../make_seg_map/k-means-alldataset_p2pdata.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../make_seg_map/k-means-alldataset_p2pdata_fuwuqi.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../make_seg_map/kmean_from_already_cache.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../result_rgb_standardization/rgb_stand.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../rgb图颜色转换/rgb2gray.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../rgb图颜色转换/rgb_translate.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../tf_to_torch/tf2torch-master/converter_copy.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../tf_to_torch/tf2torch.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../数据集复制一分二/数据集复制按比例分配.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../根据结果自动筛选/main.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../道路提取相关/hough_transform.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../道路提取相关/message_from_connection.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../道路提取相关/road_connect.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../道路提取相关/road_connect2.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../道路提取相关/seg2messages.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../道路提取相关/util.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../src/data/my_aligned_dataset_theta_wid.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../src/pix2pixHD/deeplabv3plus/deeplabv3plus/my_deeplabv3plus_base.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../src/pix2pixHD/deeplabv3plus/deeplabv3plus/my_deeplabv3plus_clsconv_1x.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../src/pix2pixHD/deeplabv3plus/deeplabv3plus/my_deeplabv3plus_ern.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../src/pix2pixHD/deeplabv3plus/deeplabv3plus/my_deeplabv3plus_featuremap.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../src/pix2pixHD/deeplabv3plus/deeplabv3plus/my_deeplabv3plus_softmax.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../src/pix2pixHD/deeplabv3plus/deeplabv3plus/my_deeplabv3plus_theta_wid.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../src/pix2pixHD/deeplabv3plus/deeplabv3plus/my_deeplabv3plus_upsample2conv.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../src/pix2pixHD/deeplabv3plus/focal_loss.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../src/pix2pixHD/my_train_img2map_inputsegresult.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../src/pix2pixHD/my_train_img2map_inputsegresult_addgradloss.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../src/pix2pixHD/my_train_img2map_inputsegresult_changedlv3p_clsconv_1x.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../src/pix2pixHD/my_train_img2map_inputsegresult_changedlv3p_upsample2conv.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../src/pix2pixHD/my_train_img2map_inputsegresult_connect_featuremap.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../src/pix2pixHD/my_train_img2map_inputsegresult_connect_softmax.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../src/pix2pixHD/my_train_img2map_inputsegresult_generateimgs.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../src/pix2pixHD/my_train_img2map_inputsegresult_jointDL1_connect_featuremap.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../src/pix2pixHD/my_train_img2map_inputsegresult_jointDL2_connect_featuremap.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../src/pix2pixHD/save_old_file/my_train_img2map_seg_cocopt.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../src/pix2pixHD/save_old_file/my_train_img2map_seg_focal_lvs.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../src/pix2pixHD/save_old_file/my_train_img2map_seg_focal_lvs_ern.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../src/pix2pixHD/save_old_file/my_train_img2map_seg_focal_lvs_theta_wid.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../src/pix2pixHD/save_old_file/my_train_img2map_seg_focalloss.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../src/pix2pixHD/save_old_file/readme.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../src/pix2pixHD/try_change_model/grad_loss_L1.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../src/pix2pixHD/try_change_model/grad_loss_struct.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../src/data/aligned_dataset.py" beforeDir="false" afterPath="$PROJECT_DIR$/../../src/data/aligned_dataset.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../src/data/image_folder.py" beforeDir="false" afterPath="$PROJECT_DIR$/../../src/data/image_folder.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../src/datasets/pix2pix_maps.py" beforeDir="false" afterPath="$PROJECT_DIR$/../../src/datasets/pix2pix_maps.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../src/pix2pixHD/deeplabv3plus/deeplabv3plus/deeplabv3plus_seg.py" beforeDir="false" afterPath="$PROJECT_DIR$/../../src/pix2pixHD/deeplabv3plus/deeplabv3plus/deeplabv3plus_seg.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../src/pix2pixHD/deeplabv3plus/deeplabv3plus/xception.py" beforeDir="false" afterPath="$PROJECT_DIR$/../../src/pix2pixHD/deeplabv3plus/deeplabv3plus/xception.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../src/pix2pixHD/eval_img2map.py" beforeDir="false" afterPath="$PROJECT_DIR$/../../src/pix2pixHD/eval_img2map.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../src/pix2pixHD/my_train_img2map_seg.py" beforeDir="false" afterPath="$PROJECT_DIR$/../../src/pix2pixHD/save_old_file/my_train_img2map_seg.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../src/pix2pixHD/my_train_voc.py" beforeDir="false" afterPath="$PROJECT_DIR$/../../src/pix2pixHD/save_old_file/my_train_voc.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../src/pix2pixHD/my_train_voc_lovasz.py" beforeDir="false" afterPath="$PROJECT_DIR$/../../src/pix2pixHD/save_old_file/my_train_voc_lovasz.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../src/pix2pixHD/myutils.py" beforeDir="false" afterPath="$PROJECT_DIR$/../../src/pix2pixHD/myutils.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../src/pix2pixHD/networks.py" beforeDir="false" afterPath="$PROJECT_DIR$/../../src/pix2pixHD/networks.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../src/pix2pixHD/train_config.py" beforeDir="false" afterPath="$PROJECT_DIR$/../../src/pix2pixHD/train_config.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../src/pix2pixHD/train_img2map.py" beforeDir="false" afterPath="$PROJECT_DIR$/../../src/pix2pixHD/train_img2map.py" afterDir="false" />
+    </list>
+    <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileEditorManager">
+    <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/eval_more_from_folder.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="464">
+              <caret line="70" column="100" selection-start-line="70" selection-start-column="100" selection-end-line="70" selection-end-column="100" />
+              <folding>
+                <element signature="e#0#18#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/old_eval_from_folder.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="5">
+              <caret line="6" column="11" selection-start-line="6" selection-start-column="11" selection-end-line="6" selection-end-column="11" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/fid/fid_score.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="5832">
+              <caret line="228" column="27" selection-start-line="228" selection-start-column="27" selection-end-line="228" selection-end-column="27" />
+              <folding>
+                <element signature="e#0#9#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://D:/python/Anaconda3/Lib/site-packages/torch/cuda/__init__.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="2160">
+              <caret line="91" selection-start-line="91" selection-end-line="91" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/MSE.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="459">
+              <caret line="19" column="36" selection-start-line="19" selection-start-column="36" selection-end-line="19" selection-end-column="36" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/SSIM.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="1917">
+              <caret line="74" column="4" selection-start-line="74" selection-start-column="4" selection-end-line="74" selection-end-column="4" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/SSIM_detail.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="54">
+              <caret line="5" selection-start-line="5" selection-end-line="7" selection-end-column="71" />
+              <folding>
+                <element signature="e#32#50#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/skimage_scores.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="37">
+              <caret line="35" column="14" selection-start-line="35" selection-start-column="14" selection-end-line="35" selection-end-column="14" />
+              <folding>
+                <element signature="e#0#21#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://D:/python/Anaconda3/Lib/site-packages/skimage/measure/_structural_similarity.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="135">
+              <caret line="12" column="4" selection-start-line="12" selection-start-column="4" selection-end-line="12" selection-end-column="4" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://D:/python/Anaconda3/Lib/site-packages/skimage/measure/simple_metrics.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="1026">
+              <caret line="42" column="18" selection-start-line="42" selection-start-column="18" selection-end-line="42" selection-end-column="18" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+    </leaf>
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+      </list>
+    </option>
+  </component>
+  <component name="FindInProjectRecents">
+    <findStrings>
+      <find>fid</find>
+    </findStrings>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/../.." />
+  </component>
+  <component name="IdeDocumentHistory">
+    <option name="CHANGED_PATHS">
+      <list>
+        <option value="$PROJECT_DIR$/eval_from_folder.py" />
+        <option value="$PROJECT_DIR$/eval/eval_real_fake_rand_2.py" />
+        <option value="$PROJECT_DIR$/eval/utils.py" />
+        <option value="$PROJECT_DIR$/eval_real_fake_rand_2.py" />
+        <option value="$PROJECT_DIR$/fid/fid_score.py" />
+        <option value="$PROJECT_DIR$/SSIM_detail.py" />
+        <option value="$PROJECT_DIR$/eval_more_from_folder.py" />
+        <option value="$PROJECT_DIR$/psnr-ssim-2.py" />
+        <option value="$PROJECT_DIR$/skimage_scores.py" />
+        <option value="$PROJECT_DIR$/old_eval_from_folder.py" />
+      </list>
+    </option>
+  </component>
+  <component name="ProjectFrameBounds" extendedState="7">
+    <option name="x" value="487" />
+    <option name="y" value="3" />
+    <option name="width" value="1278" />
+    <option name="height" value="1080" />
+  </component>
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
+  <component name="ProjectView">
+    <navigator proportions="" version="1">
+      <foldersAlwaysOnTop value="true" />
+    </navigator>
+    <panes>
+      <pane id="ProjectPane">
+        <subPane>
+          <expand>
+            <path>
+              <item name="eval_from_folder" type="b2602c69:ProjectViewProjectNode" />
+              <item name="eval_from_folder" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="eval_from_folder" type="b2602c69:ProjectViewProjectNode" />
+              <item name="eval_from_folder" type="462c0819:PsiDirectoryNode" />
+              <item name="eval" type="462c0819:PsiDirectoryNode" />
+            </path>
+          </expand>
+          <select />
+        </subPane>
+      </pane>
+      <pane id="Scope" />
+    </panes>
+  </component>
+  <component name="PropertiesComponent">
+    <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+  </component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="D:\map_translate\code\p2pHD_about\p2pHD-change-seg\GAN\scripts\eval_from_folder" />
+      <recent name="D:\map_translate\code\p2pHD_about\p2pHD-change-seg\GAN\scripts\eval_from_folder\eval" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="D:\map_translate\code\p2pHD_about\p2pHD-change-seg\GAN\scripts\eval_from_folder" />
+    </key>
+  </component>
+  <component name="RunDashboard">
+    <option name="ruleStates">
+      <list>
+        <RuleState>
+          <option name="name" value="ConfigurationTypeDashboardGroupingRule" />
+        </RuleState>
+        <RuleState>
+          <option name="name" value="StatusDashboardGroupingRule" />
+        </RuleState>
+      </list>
+    </option>
+  </component>
+  <component name="RunManager" selected="Python.old_eval_from_folder">
+    <configuration name="eval_from_folder" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="eval_from_folder" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="D:\map_translate\code\p2pHD_about\p2pHD-change-seg\GAN\scripts\eval_from_folder\old_eval_from_folder.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="eval_more_from_folder" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="eval_from_folder" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/eval_more_from_folder.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="old_eval_from_folder" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="eval_from_folder" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/old_eval_from_folder.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="psnr-ssim-2" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="eval_from_folder" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/psnr-ssim-2.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="skimage_scores" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="eval_from_folder" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/skimage_scores.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Python.old_eval_from_folder" />
+        <item itemvalue="Python.skimage_scores" />
+        <item itemvalue="Python.psnr-ssim-2" />
+        <item itemvalue="Python.eval_more_from_folder" />
+        <item itemvalue="Python.eval_from_folder" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SvnConfiguration">
+    <configuration />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="54015893-77c9-4622-8a82-16cd17afc1ee" name="Default Changelist" comment="" />
+      <created>1591496393106</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1591496393106</updated>
+    </task>
+    <servers />
+  </component>
+  <component name="ToolWindowManager">
+    <frame x="-8" y="-8" width="1936" height="1056" extended-state="7" />
+    <editor active="true" />
+    <layout>
+      <window_info id="Favorites" order="0" side_tool="true" />
+      <window_info content_ui="combo" id="Project" order="1" visible="true" weight="0.08324552" />
+      <window_info id="Structure" order="2" side_tool="true" weight="0.25" />
+      <window_info anchor="bottom" id="Terminal" order="0" />
+      <window_info anchor="bottom" id="Event Log" order="1" side_tool="true" />
+      <window_info anchor="bottom" id="Python Console" order="2" />
+      <window_info anchor="bottom" id="Message" order="3" />
+      <window_info anchor="bottom" id="Find" order="4" weight="0.329718" />
+      <window_info anchor="bottom" id="Version Control" order="5" />
+      <window_info anchor="bottom" id="Run" order="6" weight="0.329718" />
+      <window_info anchor="bottom" id="Debug" order="7" weight="0.3991323" />
+      <window_info anchor="bottom" id="Cvs" order="8" weight="0.25" />
+      <window_info anchor="bottom" id="Inspection" order="9" weight="0.4" />
+      <window_info anchor="bottom" id="TODO" order="10" />
+      <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
+      <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
+      <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
+    </layout>
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/SSIM_detail.py</url>
+          <line>94</line>
+          <option name="timeStamp" value="3" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/skimage_scores.py</url>
+          <line>103</line>
+          <option name="timeStamp" value="4" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/old_eval_from_folder.py</url>
+          <line>44</line>
+          <option name="timeStamp" value="5" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/old_eval_from_folder.py</url>
+          <line>41</line>
+          <option name="timeStamp" value="6" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/skimage_scores.py</url>
+          <option name="timeStamp" value="7" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+  </component>
+  <component name="editorHistoryManager">
+    <entry file="file://$PROJECT_DIR$/fid/__init__.py">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/iou.py" />
+    <entry file="file://$PROJECT_DIR$/eval/evaler.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="135">
+          <caret line="24" selection-start-line="24" selection-end-line="24" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/eval/utils.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="81">
+          <caret line="3" column="37" selection-start-line="3" selection-start-column="37" selection-end-line="3" selection-end-column="37" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/.PyCharmCE2019.1/system/python_stubs/1244044897/builtins.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="547">
+          <caret line="5199" column="8" selection-start-line="5187" selection-start-column="11" selection-end-line="5199" selection-end-column="8" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/psnr-ssim-2.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="216">
+          <caret line="8" lean-forward="true" selection-start-line="8" selection-end-line="8" />
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://D:/python/Anaconda3/Lib/site-packages/openpyxl/__init__.py">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/fid/fid_score.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="5832">
+          <caret line="228" column="27" selection-start-line="228" selection-start-column="27" selection-end-line="228" selection-end-column="27" />
+          <folding>
+            <element signature="e#0#9#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://D:/python/Anaconda3/Lib/site-packages/torch/cuda/__init__.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="2160">
+          <caret line="91" selection-start-line="91" selection-end-line="91" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/MSE.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="459">
+          <caret line="19" column="36" selection-start-line="19" selection-start-column="36" selection-end-line="19" selection-end-column="36" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/SSIM.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1917">
+          <caret line="74" column="4" selection-start-line="74" selection-start-column="4" selection-end-line="74" selection-end-column="4" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/SSIM_detail.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="54">
+          <caret line="5" selection-start-line="5" selection-end-line="7" selection-end-column="71" />
+          <folding>
+            <element signature="e#32#50#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://D:/python/Anaconda3/Lib/site-packages/skimage/measure/_structural_similarity.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="135">
+          <caret line="12" column="4" selection-start-line="12" selection-start-column="4" selection-end-line="12" selection-end-column="4" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://D:/python/Anaconda3/Lib/site-packages/skimage/measure/simple_metrics.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1026">
+          <caret line="42" column="18" selection-start-line="42" selection-start-column="18" selection-end-line="42" selection-end-column="18" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/old_eval_from_folder.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="5">
+          <caret line="6" column="11" selection-start-line="6" selection-start-column="11" selection-end-line="6" selection-end-column="11" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/skimage_scores.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="37">
+          <caret line="35" column="14" selection-start-line="35" selection-start-column="14" selection-end-line="35" selection-end-column="14" />
+          <folding>
+            <element signature="e#0#21#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/eval_more_from_folder.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="464">
+          <caret line="70" column="100" selection-start-line="70" selection-start-column="100" selection-end-line="70" selection-end-column="100" />
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+  </component>
+</project>

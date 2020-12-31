@@ -1,0 +1,619 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="c0564873-82b6-45b1-925a-115ca2ff2966" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/../eval_from_folder/MSE.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../eval_from_folder/SSIM.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../eval_from_folder/SSIM_detail.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../eval_from_folder/eval/evaler.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../eval_from_folder/eval/utils.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../eval_from_folder/eval_more_from_folder.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../eval_from_folder/fid/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../eval_from_folder/fid/fid_score.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../eval_from_folder/fid/inception.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../eval_from_folder/fid/inceptionV3_pretrain_dict.pth" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../find_a_img/MSE.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../find_a_img/find_a_img.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../gt重绘/remove_noise_p2pdata.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../gt重绘/rgb2gray.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../gt重绘/seg2gt.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../gt重绘/seg2gt_2.0.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../gt重绘/seg2gt_p2pdata.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../img_classify/根据txt拷贝图片.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../img_resize/img_resize.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../iou_from_folder/eval_iou_source_code.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../iou_from_folder/iou_from_folder.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../make_big_map/make_big_map.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../make_overlap_map/图片拼合放大.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/k-means-alldataset.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/k-means-alldataset_p2pdata.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/k-means-alldataset_p2pdata_fuwuqi.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/kmean_from_already_cache.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../result_rgb_standardization/rgb_stand.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../rgb图颜色转换/rgb2gray.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../rgb图颜色转换/rgb_translate.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../tf_to_torch/tf2torch-master/converter_copy.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../tf_to_torch/tf2torch.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../道路提取相关/hough_transform.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../道路提取相关/message_from_connection.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../道路提取相关/road_connect.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../道路提取相关/road_connect2.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../道路提取相关/seg2messages.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../道路提取相关/util.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../src/data/my_aligned_dataset_theta_wid.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../src/pix2pixHD/deeplabv3plus/deeplabv3plus/my_deeplabv3plus_ern.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../src/pix2pixHD/deeplabv3plus/deeplabv3plus/my_deeplabv3plus_theta_wid.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../src/pix2pixHD/deeplabv3plus/focal_loss.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../src/pix2pixHD/my_train_img2map_inputsegresult.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../src/pix2pixHD/my_train_img2map_seg_cocopt.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../src/pix2pixHD/my_train_img2map_seg_focal_lvs.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../src/pix2pixHD/my_train_img2map_seg_focal_lvs_ern.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../src/pix2pixHD/my_train_img2map_seg_focal_lvs_theta_wid.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../src/pix2pixHD/my_train_img2map_seg_focalloss.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../src/data/aligned_dataset.py" beforeDir="false" afterPath="$PROJECT_DIR$/../../src/data/aligned_dataset.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../src/data/image_folder.py" beforeDir="false" afterPath="$PROJECT_DIR$/../../src/data/image_folder.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../src/datasets/pix2pix_maps.py" beforeDir="false" afterPath="$PROJECT_DIR$/../../src/datasets/pix2pix_maps.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../src/pix2pixHD/deeplabv3plus/deeplabv3plus/deeplabv3plus_seg.py" beforeDir="false" afterPath="$PROJECT_DIR$/../../src/pix2pixHD/deeplabv3plus/deeplabv3plus/deeplabv3plus_seg.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../src/pix2pixHD/deeplabv3plus/deeplabv3plus/xception.py" beforeDir="false" afterPath="$PROJECT_DIR$/../../src/pix2pixHD/deeplabv3plus/deeplabv3plus/xception.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../src/pix2pixHD/eval_img2map.py" beforeDir="false" afterPath="$PROJECT_DIR$/../../src/pix2pixHD/eval_img2map.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../src/pix2pixHD/myutils.py" beforeDir="false" afterPath="$PROJECT_DIR$/../../src/pix2pixHD/myutils.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../src/pix2pixHD/train_config.py" beforeDir="false" afterPath="$PROJECT_DIR$/../../src/pix2pixHD/train_config.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../src/pix2pixHD/train_img2map.py" beforeDir="false" afterPath="$PROJECT_DIR$/../../src/pix2pixHD/train_img2map.py" afterDir="false" />
+    </list>
+    <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileEditorManager">
+    <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/k-means.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="1745">
+              <caret line="122" column="18" selection-start-line="122" selection-start-column="18" selection-end-line="122" selection-end-column="18" />
+              <folding>
+                <element signature="e#0#18#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/k-means-alldataset_p2pdata.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="389">
+              <caret line="272" column="7" selection-start-line="272" selection-start-column="7" selection-end-line="272" selection-end-column="7" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/k-means-alldataset_p2pdata_fuwuqi.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="-181">
+              <caret line="65" column="17" selection-start-line="65" selection-start-column="17" selection-end-line="65" selection-end-column="17" />
+              <folding>
+                <element signature="e#0#18#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+    </leaf>
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+      </list>
+    </option>
+  </component>
+  <component name="FindInProjectRecents">
+    <findStrings>
+      <find>catch</find>
+      <find>np.array</find>
+      <find>dump</find>
+      <find>load</find>
+      <find>default</find>
+      <find>2000</find>
+      <find>make</find>
+      <find>make_floder</find>
+      <find>Z</find>
+    </findStrings>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/../.." />
+  </component>
+  <component name="IdeDocumentHistory">
+    <option name="CHANGED_PATHS">
+      <list>
+        <option value="$PROJECT_DIR$/k_mean/run.py" />
+        <option value="$PROJECT_DIR$/k_mean/clustering.py" />
+        <option value="$PROJECT_DIR$/k-means.py" />
+        <option value="$PROJECT_DIR$/make_seg_img.py" />
+        <option value="$PROJECT_DIR$/kmean_from_already_cache.py" />
+        <option value="$PROJECT_DIR$/k-means-alldataset.py" />
+        <option value="$PROJECT_DIR$/k-means-alldataset_p2pdata.py" />
+        <option value="$PROJECT_DIR$/k-means-alldataset_p2pdata_fuwuqi.py" />
+      </list>
+    </option>
+  </component>
+  <component name="ProjectFrameBounds" extendedState="7">
+    <option name="x" value="487" />
+    <option name="y" value="3" />
+    <option name="width" value="1278" />
+    <option name="height" value="1080" />
+  </component>
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectView">
+    <navigator proportions="" version="1">
+      <foldersAlwaysOnTop value="true" />
+    </navigator>
+    <panes>
+      <pane id="Scope" />
+      <pane id="ProjectPane">
+        <subPane>
+          <expand>
+            <path>
+              <item name="make_seg_map" type="b2602c69:ProjectViewProjectNode" />
+              <item name="make_seg_map" type="462c0819:PsiDirectoryNode" />
+            </path>
+          </expand>
+          <select />
+        </subPane>
+      </pane>
+    </panes>
+  </component>
+  <component name="PropertiesComponent">
+    <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+  </component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="D:\map_translate\code\p2pHD_about\p2pHD-change-seg\GAN\scripts\make_seg_map" />
+    </key>
+  </component>
+  <component name="RunDashboard">
+    <option name="ruleStates">
+      <list>
+        <RuleState>
+          <option name="name" value="ConfigurationTypeDashboardGroupingRule" />
+        </RuleState>
+        <RuleState>
+          <option name="name" value="StatusDashboardGroupingRule" />
+        </RuleState>
+      </list>
+    </option>
+  </component>
+  <component name="RunManager" selected="Python.k-means-alldataset_p2pdata_fuwuqi">
+    <configuration name="k-means-alldataset" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="make_seg_map" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/k-means-alldataset.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="k-means-alldataset_p2pdata" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="make_seg_map" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/k-means-alldataset_p2pdata.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="k-means-alldataset_p2pdata_fuwuqi" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="make_seg_map" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/k-means-alldataset_p2pdata_fuwuqi.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="kmean_from_already_cache" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="make_seg_map" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/kmean_from_already_cache.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="make_seg_img" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="make_seg_map" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/make_seg_img.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <list>
+      <item itemvalue="Python.k-means-alldataset" />
+      <item itemvalue="Python.kmean_from_already_cache" />
+      <item itemvalue="Python.make_seg_img" />
+      <item itemvalue="Python.k-means-alldataset_p2pdata" />
+      <item itemvalue="Python.k-means-alldataset_p2pdata_fuwuqi" />
+    </list>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Python.k-means-alldataset_p2pdata_fuwuqi" />
+        <item itemvalue="Python.k-means-alldataset_p2pdata" />
+        <item itemvalue="Python.k-means-alldataset" />
+        <item itemvalue="Python.kmean_from_already_cache" />
+        <item itemvalue="Python.make_seg_img" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SvnConfiguration">
+    <configuration />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="c0564873-82b6-45b1-925a-115ca2ff2966" name="Default Changelist" comment="" />
+      <created>1586778401395</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1586778401395</updated>
+    </task>
+    <servers />
+  </component>
+  <component name="TestHistory">
+    <history-entry file="pytest_in_k-means-alldataset_py - 2020.04.20 at 21h 05m 53s.xml">
+      <configuration name="pytest in k-means-alldataset.py" configurationId="tests" />
+    </history-entry>
+  </component>
+  <component name="ToolWindowManager">
+    <frame x="-8" y="-8" width="1936" height="1056" extended-state="7" />
+    <editor active="true" />
+    <layout>
+      <window_info id="Favorites" order="0" side_tool="true" />
+      <window_info active="true" content_ui="combo" id="Project" order="1" visible="true" weight="0.15384616" />
+      <window_info id="Structure" order="2" side_tool="true" weight="0.25" />
+      <window_info anchor="bottom" id="Terminal" order="0" />
+      <window_info anchor="bottom" id="Event Log" order="1" sideWeight="0.50052685" side_tool="true" weight="0.329718" />
+      <window_info anchor="bottom" id="Python Console" order="2" />
+      <window_info anchor="bottom" id="Message" order="3" />
+      <window_info anchor="bottom" id="Find" order="4" />
+      <window_info anchor="bottom" id="Version Control" order="5" />
+      <window_info anchor="bottom" id="Run" order="6" sideWeight="0.49947312" weight="0.329718" />
+      <window_info anchor="bottom" id="Debug" order="7" weight="0.30043384" />
+      <window_info anchor="bottom" id="Cvs" order="8" weight="0.25" />
+      <window_info anchor="bottom" id="Inspection" order="9" weight="0.4" />
+      <window_info anchor="bottom" id="TODO" order="10" />
+      <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
+      <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
+      <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
+    </layout>
+    <layout-to-restore>
+      <window_info id="Favorites" order="0" side_tool="true" />
+      <window_info active="true" content_ui="combo" id="Project" order="1" visible="true" weight="0.15384616" />
+      <window_info id="Structure" order="2" side_tool="true" weight="0.25" />
+      <window_info anchor="bottom" id="Terminal" order="0" />
+      <window_info anchor="bottom" id="Event Log" order="1" sideWeight="0.50052685" side_tool="true" weight="0.329718" />
+      <window_info anchor="bottom" id="Python Console" order="2" />
+      <window_info anchor="bottom" id="Message" order="3" />
+      <window_info anchor="bottom" id="Find" order="4" />
+      <window_info anchor="bottom" id="Version Control" order="5" />
+      <window_info anchor="bottom" id="Run" order="6" sideWeight="0.49947312" weight="0.329718" />
+      <window_info anchor="bottom" id="Debug" order="7" weight="0.30043384" />
+      <window_info anchor="bottom" id="Cvs" order="8" weight="0.25" />
+      <window_info anchor="bottom" id="Inspection" order="9" weight="0.4" />
+      <window_info anchor="bottom" id="TODO" order="10" />
+      <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
+      <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
+      <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
+    </layout-to-restore>
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/k_mean/run.py</url>
+          <line>31</line>
+          <option name="timeStamp" value="1" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/k_mean/run.py</url>
+          <line>7</line>
+          <option name="timeStamp" value="2" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/k-means.py</url>
+          <line>104</line>
+          <option name="timeStamp" value="8" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/k-means.py</url>
+          <line>138</line>
+          <option name="timeStamp" value="13" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/k-means.py</url>
+          <line>127</line>
+          <option name="timeStamp" value="28" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/k-means.py</url>
+          <line>169</line>
+          <option name="timeStamp" value="29" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/k-means.py</url>
+          <line>163</line>
+          <option name="timeStamp" value="30" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/k-means-alldataset.py</url>
+          <line>340</line>
+          <option name="timeStamp" value="35" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/k-means.py</url>
+          <line>123</line>
+          <option name="timeStamp" value="36" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/k-means.py</url>
+          <line>122</line>
+          <option name="timeStamp" value="37" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/k-means-alldataset.py</url>
+          <line>30</line>
+          <option name="timeStamp" value="47" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/k-means-alldataset.py</url>
+          <line>29</line>
+          <option name="timeStamp" value="48" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/k-means-alldataset.py</url>
+          <line>33</line>
+          <option name="timeStamp" value="50" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/kmean_from_already_cache.py</url>
+          <line>317</line>
+          <option name="timeStamp" value="56" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/kmean_from_already_cache.py</url>
+          <line>262</line>
+          <option name="timeStamp" value="57" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+  </component>
+  <component name="editorHistoryManager">
+    <entry file="file://$PROJECT_DIR$/make_seg_map.py" />
+    <entry file="file://$PROJECT_DIR$/../../../../../参考开源文件/ml-master/ml-master/cluster/k-means.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="149">
+          <caret line="75" column="21" selection-start-line="75" selection-start-column="21" selection-end-line="75" selection-end-column="21" />
+          <folding>
+            <element signature="e#275#293#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/k_mean/point.py">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../../../../../../看看效果/rgb2gray.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-300">
+          <folding>
+            <element signature="e#0#13#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$APPLICATION_HOME_DIR$/helpers/pydev/_pydev_imps/_pydev_execfile.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="425">
+          <caret line="17" selection-start-line="17" selection-end-line="17" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://D:/python/Anaconda3/Lib/site-packages/colorama/ansitowin32.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="205">
+          <caret line="36" selection-start-line="36" selection-end-line="36" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/.PyCharmCE2019.1/system/python_stubs/1244044897/builtins.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="205">
+          <caret line="3786" column="6" selection-start-line="3786" selection-start-column="6" selection-end-line="3786" selection-end-column="6" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://D:/python/Anaconda3/Lib/json/encoder.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="11799">
+          <caret line="437" selection-start-line="437" selection-end-line="437" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://D:/python/Anaconda3/Lib/json/__init__.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="7911">
+          <caret line="295" selection-start-line="295" selection-end-line="295" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://D:/python/Anaconda3/Lib/json/decoder.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="9126">
+          <caret line="340" selection-start-line="340" selection-end-line="340" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://D:/python/Anaconda3/Lib/site-packages/PIL/Image.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1625">
+          <caret line="1946" selection-start-line="1946" selection-end-line="1946" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../../../../../../数据集/test（原文件未改动）.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="573">
+          <caret line="38" column="24" selection-start-line="38" selection-start-column="16" selection-end-line="38" selection-end-column="24" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/kmean_from_already_cache.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-1603">
+          <caret line="19" selection-start-line="19" selection-end-line="21" selection-end-column="48" />
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/make_seg_img.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="196">
+          <caret line="30" column="23" selection-start-line="30" selection-start-column="23" selection-end-line="30" selection-end-column="23" />
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/k-means-alldataset.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-5132">
+          <caret line="146" column="12" selection-start-line="146" selection-start-column="12" selection-end-line="146" selection-end-column="12" />
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/k-means-alldataset_p2pdata.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="389">
+          <caret line="272" column="7" selection-start-line="272" selection-start-column="7" selection-end-line="272" selection-end-column="7" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/k_mean/clustering.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-650">
+          <caret line="142" column="8" selection-start-line="142" selection-start-column="8" selection-end-line="142" selection-end-column="8" />
+          <folding>
+            <element signature="e#0#21#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/k_mean/run.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="268">
+          <caret line="15" column="25" selection-start-line="15" selection-start-column="25" selection-end-line="15" selection-end-column="25" />
+          <folding>
+            <element signature="e#0#15#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/k-means.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1745">
+          <caret line="122" column="18" selection-start-line="122" selection-start-column="18" selection-end-line="122" selection-end-column="18" />
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://D:/python/Anaconda3/Lib/site-packages/tqdm/_tqdm.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="205">
+          <caret line="646" column="8" selection-start-line="646" selection-start-column="8" selection-end-line="646" selection-end-column="8" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/k-means-alldataset_p2pdata_fuwuqi.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-181">
+          <caret line="65" column="17" selection-start-line="65" selection-start-column="17" selection-end-line="65" selection-end-column="17" />
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+  </component>
+</project>
