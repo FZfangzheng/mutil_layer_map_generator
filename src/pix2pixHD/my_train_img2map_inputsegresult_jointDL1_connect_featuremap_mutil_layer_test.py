@@ -74,7 +74,9 @@ def eval_fidiou(args, model_G,model_seg, data_loader):
 
         id_layer_np = []
         im_path = sample['A_paths']
-        for i in range(args.test_batch_size):
+        print(im_path)
+        print(len(im_path))
+        for i in range(len(im_path)):
             num_layer=int(im_path[i].split(os.sep)[-2])
             id_layer_np.append(np.full((1,args.fineSize,args.fineSize),num_layer))
 
@@ -429,6 +431,90 @@ def train(args, get_dataloader_func=get_pix2pix_maps_dataloader):
         model_saver.save('DLV3P_global_scheduler', DLV3P_global_scheduler)
         model_saver.save('DLV3P_backbone_scheduler', DLV3P_backbone_scheduler)
 
+def test(args, get_dataloader_func=get_pix2pix_maps_dataloader):
+    with open(os.path.join(args.save,'args.json'), 'w') as f:
+        json.dump(vars(args), f)
+    logger = Logger(save_path=args.save, json_name='img2map_seg')
+    epoch_now = len(logger.get_data('FOCAL_loss'))
+
+    model_saver = ModelSaver(save_path=args.save,
+                             name_list=['G', 'D', 'G_optimizer', 'D_optimizer',
+                                        'G_scheduler', 'D_scheduler','DLV3P',"DLV3P_global_optimizer",
+                                        "DLV3P_backbone_optimizer","DLV3P_global_scheduler","DLV3P_backbone_scheduler"])
+
+    sw = SummaryWriter(args.tensorboard_path)
+
+    G = get_G(args,input_nc=3+256) # 3+256，256为分割网络输出featuremap的通道数
+    D = get_D(args)
+    model_saver.load('G', G)
+    model_saver.load('D', D)
+
+    cfg=Configuration()
+    cfg.MODEL_NUM_CLASSES=args.label_nc
+    DLV3P=deeplabv3plus(cfg)
+    if args.gpu:
+        # DLV3P=nn.DataParallel(DLV3P)
+        DLV3P=DLV3P.cuda()
+    model_saver.load('DLV3P', DLV3P)
+
+    G_optimizer = Adam(G.parameters(), lr=args.G_lr, betas=(args.beta1, 0.999))
+    D_optimizer = Adam(D.parameters(), lr=args.D_lr, betas=(args.beta1, 0.999))
+
+    seg_global_params, seg_backbone_params=DLV3P.get_paras()
+    DLV3P_global_optimizer = torch.optim.Adam([{'params': seg_global_params, 'initial_lr': args.seg_lr_global}], lr=args.seg_lr_global,betas=(args.beta1, 0.999))
+    DLV3P_backbone_optimizer = torch.optim.Adam([{'params': seg_backbone_params, 'initial_lr': args.seg_lr_backbone}], lr=args.seg_lr_backbone, betas=(args.beta1, 0.999))
+
+    model_saver.load('G_optimizer', G_optimizer)
+    model_saver.load('D_optimizer', D_optimizer)
+    model_saver.load('DLV3P_global_optimizer', DLV3P_global_optimizer)
+    model_saver.load('DLV3P_backbone_optimizer', DLV3P_backbone_optimizer)
+
+    G_scheduler = get_hinge_scheduler(args, G_optimizer)
+    D_scheduler = get_hinge_scheduler(args, D_optimizer)
+    DLV3P_global_scheduler=torch.optim.lr_scheduler.LambdaLR(DLV3P_global_optimizer, lr_lambda=lambda epoch:(1 - epoch/args.epochs)**0.9,last_epoch=epoch_now)
+    DLV3P_backbone_scheduler = torch.optim.lr_scheduler.LambdaLR(DLV3P_backbone_optimizer,lr_lambda=lambda epoch: (1 - epoch / args.epochs) ** 0.9,last_epoch=epoch_now)
+
+    model_saver.load('G_scheduler', G_scheduler)
+    model_saver.load('D_scheduler', D_scheduler)
+    model_saver.load('DLV3P_global_scheduler', DLV3P_global_scheduler)
+    model_saver.load('DLV3P_backbone_scheduler', DLV3P_backbone_scheduler)
+
+    device = get_device(args)
+
+    GANLoss = get_GANLoss(args)
+    if args.use_ganFeat_loss:
+        DFLoss = get_DFLoss(args)
+    if args.use_vgg_loss:
+        VGGLoss = get_VGGLoss(args)
+    if args.use_low_level_loss:
+        LLLoss = get_low_level_loss(args)
+
+    # CE_loss=nn.CrossEntropyLoss(ignore_index=255)
+    LVS_loss = lovasz_softmax
+    data_loader_focal = get_dataloader_func(args, train=True)
+    data_loader_focal = tqdm(data_loader_focal)
+    alpha = label_nums(data_loader_focal,label_num=args.label_nc)
+    # alpha = [1,1,1,1,1]
+    tmp_min = min(alpha)
+    assert tmp_min > 0
+    for i in range(len(alpha)):
+        alpha[i] = tmp_min / alpha[i]
+    if args.focal_alpha_revise:
+        assert len(args.focal_alpha_revise) == len(alpha)
+        for i in range(len(alpha)):
+            alpha[i]=alpha[i]*args.focal_alpha_revise[i]
+    print(alpha)
+    FOCAL_loss = FocalLoss(gamma=2, alpha=alpha)
+
+
+    # if epoch_now==args.epochs:
+    print('get final models')
+    iou = eval_fidiou(args,model_G=G, model_seg=DLV3P,data_loader=get_pix2pix_maps_dataloader(args, train=False))
+    logger.log(key='iou', data=iou)
+    if iou < logger.get_max(key='FID'):
+        model_saver.save(f'DLV3P_{iou:.4f}', DLV3P)
+    sw.add_scalar('eval/iou', iou, epoch_now)
+
 
 
 if __name__ == '__main__':
@@ -441,6 +527,6 @@ if __name__ == '__main__':
     print(f'\nset seed as {args.seed}!\n')
     seed_torch(args.seed)
 
-    train(args, get_dataloader_func=get_pix2pix_maps_dataloader)
-
+    # train(args, get_dataloader_func=get_pix2pix_maps_dataloader)
+    test(args, get_dataloader_func=get_pix2pix_maps_dataloader)
 pass

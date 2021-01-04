@@ -45,8 +45,8 @@ def image_compose(img_path):
 
 
 if __name__ == "__main__":
-    save_path = r"D:\project\北理项目\map_project\多层联合\data_all\fake_mix\newfake_result_for_show\16all"
-    map_path = r"D:\project\北理项目\map_project\多层联合\data_all\fake_mix\newfake_result_for_show\16"
+    save_path = r"/data/multilayer_map_project/map_repaint_for_show/17all"
+    map_path = r"/data/multilayer_map_project/map_repaint_for_show/17"
     if not os.path.exists(save_path):
         os.makedirs(save_path)
     image_list_low = make_dataset(map_path)
@@ -55,9 +55,10 @@ if __name__ == "__main__":
     max_x1 = 0
     max_y1 = 0
     for img_low in image_list_low:
-        image_names = img_low.split("\\")
-        x = image_names[9]
-        y = image_names[10].split(".")[0]
+        image_names = img_low.split(os.sep)
+        print(image_names)
+        x = image_names[5]
+        y = image_names[6].split(".")[0]
         if int(x) > max_x1:
             max_x1 = int(x)
         if int(x) < min_x1:

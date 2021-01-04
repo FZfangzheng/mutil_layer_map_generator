@@ -74,7 +74,7 @@ def eval_fidiou(args, model_G,model_seg, data_loader):
 
         id_layer_np = []
         im_path = sample['A_paths']
-        for i in range(args.test_batch_size):
+        for i in range(len(im_path)):
             num_layer=int(im_path[i].split(os.sep)[-2])
             id_layer_np.append(np.full((1,args.fineSize,args.fineSize),num_layer))
 
@@ -270,7 +270,7 @@ def train(args, get_dataloader_func=get_pix2pix_maps_dataloader):
             maps = sample['B'].to(device)
             id_layer_np = []
             im_path = sample['A_paths']
-            for i in range(args.batch_size):
+            for i in range(len(im_path)):
                 num_layer=int(im_path[i].split(os.sep)[-2])
                 id_layer_np.append(np.full((1,args.fineSize,args.fineSize),num_layer))
 

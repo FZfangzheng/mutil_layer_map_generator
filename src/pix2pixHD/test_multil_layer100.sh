@@ -1,10 +1,10 @@
-CUDA_VISIBLE_DEVICES=4 nohup python my_train_img2map_inputsegresult_jointDL1_connect_featuremap_mutil_layer_test.py \
---dataroot /data/fangzheng/data_all_tmp \
---save /data/fangzheng/out_mutil_layer100 \
+CUDA_VISIBLE_DEVICES=0 python my_train_img2map_inputsegresult_jointDL1_connect_featuremap_mutil_layer_test.py \
+--dataroot /data/multilayer_map_project/train_data \
+--save /data/multilayer_map_project/out_mutil_layer100 \
 --gpu 1 \
---epochs 100 \
---batch_size 4 \
---test_batch_size 2 \
+--epochs -1 \
+--batch_size 8 \
+--test_batch_size 4 \
 --loadSize 256 \
 --fineSize 256 \
 --crop_size 256 \
@@ -21,4 +21,4 @@ CUDA_VISIBLE_DEVICES=4 nohup python my_train_img2map_inputsegresult_jointDL1_con
 --low_level_loss L1 \
 --netG local \
 --n_downsample_global 3 \
---id_layer 18 > out_mutil_layer100.log 2>&1 &
+--if_mutil_layer 1
