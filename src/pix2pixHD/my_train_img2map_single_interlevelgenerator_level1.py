@@ -10,6 +10,7 @@ sys.path.append(osp.join(sys.path[0], '../../'))
 # sys.path.append(osp.join(sys.path[0], '../../../'))
 import time
 import torch
+import shutil
 import torch.nn as nn
 from src.utils.train_utils import model_accelerate, get_device, mean, get_lr
 from src.pix2pixHD.train_config import config
@@ -18,6 +19,7 @@ from torch.optim import Adam
 from src.pix2pixHD.hinge_lr_scheduler import get_hinge_scheduler
 from src.utils.logger import ModelSaver, Logger
 from src.datasets import get_pix2pix_maps_dataloader
+from src.datasets.pix2pix_maps import get_inter1_dataloader
 from src.pix2pixHD.utils import get_edges, label_to_one_hot, get_encode_features
 from src.utils.visualizer import Visualizer
 from tqdm import tqdm
@@ -43,78 +45,67 @@ from src.pix2pixHD.deeplabv3plus.focal_loss import FocalLoss
 from evaluation.fid.fid_score import fid_score
 import json
 
-def eval_fidiou(args, model_G, data_loader):
-    device = get_device(args)
-    data_loader = tqdm(data_loader)
-    model_G.eval()
-    model_G = model_G.to(device)
+IMG_EXTENSIONS = [
+    '.jpg', '.JPG', '.jpeg', '.JPEG',
+    '.png', '.PNG', '.ppm', '.PPM', '.bmp', '.BMP','.tif',
+]
 
+def is_image_file(filename):
+    return any(filename.endswith(extension) for extension in IMG_EXTENSIONS)
 
-    real_seg_dir = osp.join(args.save, 'real_seg')
-    real_dir = osp.join(args.save, 'real_result')
-    A_dir = osp.join(args.save, 'real_source')
-    seg_dir = osp.join(args.save, 'seg_result')
-    fake_dir=osp.join(args.save, 'fake_result')
-    create_dir(real_dir)
-    create_dir(real_seg_dir)
-    create_dir(A_dir)
-    create_dir(seg_dir)
-    create_dir(fake_dir)
+def make_dataset(dir):
+    images = []
+    assert os.path.isdir(dir), '%s is not a valid directory' % dir
+    for root, _, fnames in sorted(os.walk(dir)):
+        for fname in fnames:
+            if is_image_file(fname):
+                path = os.path.join(root, fname)
+                images.append(path)
+    return images
 
-    for i, sample in enumerate(data_loader):
-        inputs, labels = sample['A_seg'], sample['seg'].squeeze(dim=1)
-        inputs = inputs.cuda() if args.gpu else inputs
-        labels = labels.cuda() if args.gpu else labels
-        imgs = sample['A'].to(device)
-        maps = sample['B'].to(device)
+def eval_fidiou(args, model_G):
+    for layer in range(args.layer_num):
+        # start from layer_num
+        id_layer = args.layer_num - layer
+        if layer == 0:
+            before_img_path = os.path.join(args.dataroot, "test", "A", str(id_layer))
+            after_img_path = os.path.join(args.dataroot, "test", "B", str(id_layer))
+            if not os.path.exists(after_img_path):
+                os.mkdir(after_img_path)
+            img_list = make_dataset(before_img_path)
+            for img_before in img_list:
+                img_name = os.path.split(img_before)[1]
+                img_after = os.path.join(after_img_path, img_name)
+                shutil.copy(img_before, img_after)
+        else:
+            data_loader = get_inter1_dataloader(args, id_layer, train=False)
+            data_loader = tqdm(data_loader)
+            model_G.eval()
+            device = get_device(args)
+            model_G = model_G.to(device)
 
-        id_layer_np = []
-        im_path = sample['A_paths']
-        for i in range(args.test_batch_size):
-            num_layer=int(im_path[i].split(os.sep)[-2])
-            id_layer_np.append(np.full((1,args.fineSize,args.fineSize),num_layer))
+            fake_dir = osp.join(args.save, 'fake_result')
+            train_B_dir = os.path.join(args.dataroot, "train", "B", str(id_layer))
 
-        id_layer = torch.from_numpy(np.array(id_layer_np)).to(device)
-        imgs_plus=torch.cat((imgs,id_layer.float()),1)
-        fakes = model_G(imgs_plus).detach()
+            create_dir(fake_dir)
 
-        batch_size = inputs.size(0)
-        im_name = sample['A_paths']
-        for b in range(batch_size):
-            file_name = osp.split(im_name[b])[0].split(os.sep)[-1]+osp.split(im_name[b])[-1].split('.')[0]
-            real_file = osp.join(real_dir, f'{file_name}.tif')
-            real_seg_file = osp.join(real_seg_dir, f'{file_name}.tif')
-            A_file = osp.join(A_dir, f'{file_name}.tif')
-            seg_file = osp.join(seg_dir, f'{file_name}.tif')
-            fake_file=osp.join(fake_dir, f'{file_name}.tif')
+            for i, sample in enumerate(data_loader):
+                layer_imgs = sample['A'].to(device)
+                final_before_img = sample['B'].to(device)
 
-            from_std_tensor_save_image(filename=real_file, data=sample['B'][b].cpu())
-            from_std_tensor_save_image(filename=A_file, data=sample['A'][b].cpu())
-            from_std_tensor_save_image(filename=fake_file, data=fakes[b].cpu())
-            tmpimg= sample['seg'][b].data.cpu().numpy()
-            tmpimg = gray2rgb(tmpimg)
-            tmpimg=Image.fromarray(tmpimg)
-            tmpimg.save(fp=real_seg_file)
+                imgs_plus = torch.cat((layer_imgs.float(),final_before_img.float()),1)
+                fakes = model_G(imgs_plus).detach()
 
-            # tmpimg = gray2rgb(pred[b])
-            tmpimg = Image.fromarray(tmpimg)
-            tmpimg.save(fp=seg_file)
-
-    fid = fid_score(real_path=real_dir, fake_path=fake_dir, gpu=str(args.gpu))
-    print(f'===> fid score:{fid:.4f}')
+                batch_size = layer_imgs.size(0)
+                im_name = sample['A_path']
+                for b in range(batch_size):
+                    file_name = osp.split(im_name[b])[-1].split('.')[0]
+                    fake_file=osp.join(fake_dir, f'{file_name}.png')
+                    from_std_tensor_save_image(filename=fake_file, data=fakes[b].cpu())
+                    from_std_tensor_save_image(filename=train_B_dir, data=fakes[b].cpu())
 
     model_G.train()
 
-
-def label_nums(data_loader,label_num=5): # 遍历dataloader，计算其所有图像中分割GT各label的pix总数
-    ret=[]
-    for i in range(label_num):
-        ret.append(0)
-    for step, sample in enumerate(data_loader):
-        seg=sample["seg"]
-        for i in range(label_num):
-            ret[i]+=(seg==i).sum().item()
-    return ret
 
 
 
@@ -123,7 +114,7 @@ def train(args, get_dataloader_func=get_pix2pix_maps_dataloader):
     with open(os.path.join(args.save,'args.json'), 'w') as f:
         json.dump(vars(args), f)
     logger = Logger(save_path=args.save, json_name='img2map_seg')
-    epoch_now = len(logger.get_data('FOCAL_loss'))
+    epoch_now = len(logger.get_data('D_loss'))
 
     model_saver = ModelSaver(save_path=args.save,
                              name_list=['G', 'D', 'G_optimizer', 'D_optimizer',
@@ -132,8 +123,8 @@ def train(args, get_dataloader_func=get_pix2pix_maps_dataloader):
     sw = SummaryWriter(args.tensorboard_path)
 
 
-    G = get_G(args,input_nc=3+256) # 3+256+1，256为分割网络输出featuremap的通道数
-    D = get_D(args)
+    G = get_G(args,input_nc=6) # 3+256+1，256为分割网络输出featuremap的通道数
+    D = get_D(args,input_nc=6)
     model_saver.load('G', G)
     model_saver.load('D', D)
 
@@ -165,166 +156,158 @@ def train(args, get_dataloader_func=get_pix2pix_maps_dataloader):
     if args.use_low_level_loss:
         LLLoss = get_low_level_loss(args)
 
-    # CE_loss=nn.CrossEntropyLoss(ignore_index=255)
-    LVS_loss = lovasz_softmax
-    data_loader_focal = get_dataloader_func(args, train=True)
-    data_loader_focal = tqdm(data_loader_focal)
-    alpha = label_nums(data_loader_focal,label_num=args.label_nc)
-    # alpha = [1,1,1,1,1]
-    tmp_min = min(alpha)
-    assert tmp_min > 0
-    for i in range(len(alpha)):
-        alpha[i] = tmp_min / alpha[i]
-    if args.focal_alpha_revise:
-        assert len(args.focal_alpha_revise) == len(alpha)
-        for i in range(len(alpha)):
-            alpha[i]=alpha[i]*args.focal_alpha_revise[i]
-    print(alpha)
-    FOCAL_loss = FocalLoss(gamma=2, alpha=alpha)
 
 
     if epoch_now==args.epochs:
         print('get final models')
-        eval_fidiou(args, model_G=G, data_loader=get_pix2pix_maps_dataloader(args, train=False))
+        eval_fidiou(args, model_G=G)
 
 
     for epoch in range(epoch_now, args.epochs):
         G_loss_list = []
         D_loss_list = []
 
-
-        data_loader = get_dataloader_func(args, train=True)
-        data_loader = tqdm(data_loader)
-
-        for step, sample in enumerate(data_loader):
-            # 先训练deeplabv3+
-            imgs_seg = sample['A_seg'].to(device)  # (shape: (batch_size, 3, img_h, img_w))
-            label_imgs = sample['seg'].type(torch.LongTensor).to(device)  # (shape: (batch_size, img_h, img_w))
-
-            imgs = sample['A'].to(device)
-            maps = sample['B'].to(device)
-            id_layer_np = []
-            im_path = sample['A_paths']
-            for i in range(args.batch_size):
-                num_layer=int(im_path[i].split(os.sep)[-2])
-                id_layer_np.append(np.full((1,args.fineSize,args.fineSize),num_layer))
-
-
-            id_layer = torch.from_numpy(np.array(id_layer_np)).to(device)
-            # print(id_layer.shape)
-            imgs_plus = torch.cat((imgs,id_layer.float()),1)
-            # train the Discriminator
-            D_optimizer.zero_grad()
-            reals_maps = torch.cat([imgs.float(), maps.float(), id_layer.float()], dim=1)
-            # reals_maps = torch.cat([imgs.float(), maps.float()], dim=1)
-
-            fakes = G(imgs_plus).detach()
-            fakes_maps = torch.cat([imgs.float(), fakes.float(), id_layer.float()], dim=1)
-            # fakes_maps = torch.cat([imgs.float(), fakes.float()], dim=1)
-
-            D_real_outs = D(reals_maps)
-            D_real_loss = GANLoss(D_real_outs, True)
-
-            D_fake_outs = D(fakes_maps)
-            D_fake_loss = GANLoss(D_fake_outs, False)
-
-            D_loss = 0.5 * (D_real_loss + D_fake_loss)
-            D_loss = D_loss.mean()
-            D_loss.backward()
-            D_loss = D_loss.item()
-            D_optimizer.step()
-
-            # train generator and encoder
-            # G_optimizer.zero_grad()
-            fakes = G(imgs_plus)
-            fakes_maps = torch.cat([imgs.float(), fakes.float(), id_layer.float()], dim=1)
-            # fakes_maps = torch.cat([imgs.float(), fakes.float()], dim=1)
-            D_fake_outs = D(fakes_maps)
-
-            gan_loss = GANLoss(D_fake_outs, True)
-
-            G_loss = 0
-            G_loss += gan_loss
-            gan_loss = gan_loss.mean().item()
-
-            if args.use_vgg_loss:
-                vgg_loss = VGGLoss(fakes, imgs)
-                G_loss += args.lambda_feat * vgg_loss
-                vgg_loss = vgg_loss.mean().item()
+        for layer in range(args.layer_num):
+            # start from layer_num
+            id_layer = args.layer_num - layer
+            if layer == 0:
+                before_img_path = os.path.join(args.dataroot, "train", "A", str(id_layer))
+                after_img_path = os.path.join(args.dataroot, "train", "B", str(id_layer))
+                if not os.path.exists(after_img_path):
+                    os.mkdir(after_img_path)
+                img_list = make_dataset(before_img_path)
+                for img_before in tqdm(img_list):
+                    img_name = os.path.split(img_before)[1]
+                    img_after = os.path.join(after_img_path,img_name)
+                    shutil.copy(img_before,img_after)
             else:
-                vgg_loss = 0.
 
-            if args.use_ganFeat_loss:
-                df_loss = DFLoss(D_fake_outs, D_real_outs)
-                G_loss += args.lambda_feat * df_loss
-                df_loss = df_loss.mean().item()
-            else:
-                df_loss = 0.
+                data_loader = get_inter1_dataloader(args, id_layer, train=True)
+                data_loader = tqdm(data_loader)
 
-            if args.use_low_level_loss:
-                ll_loss = LLLoss(fakes, maps)
-                G_loss += args.lambda_feat * ll_loss
-                ll_loss = ll_loss.mean().item()
-            else:
-                ll_loss = 0.
+                for step, sample in enumerate(data_loader):
+                    layer_imgs = sample['A'].to(device)
+                    final_before_img = sample['B'].to(device)
+                    target_layer_img = sample['C'].to(device)
 
-            G_loss = G_loss.mean()
-            G_seg_loss =G_loss+seg_loss
-            G_loss = G_loss.item()
-            seg_loss=seg_loss.item()
+                    # print(id_layer.shape)
+                    imgs_plus = torch.cat((layer_imgs.float(),final_before_img.float()),1)
+                    # train the Discriminator
+                    D_optimizer.zero_grad()
+                    reals_maps = torch.cat([layer_imgs.float(), target_layer_img.float(), ], dim=1)
+                    # reals_maps = torch.cat([imgs.float(), maps.float()], dim=1)
 
-            G_optimizer.zero_grad()
+                    fakes = G(imgs_plus).detach()
 
-            G_seg_loss.backward()
-            G_optimizer.step()
-
-
-            data_loader.write(f'Epochs:{epoch}  | Dloss:{D_loss:.6f} | Gloss:{G_loss:.6f}'
-                              f'| GANloss:{gan_loss:.6f} | VGGloss:{vgg_loss:.6f} | DFloss:{df_loss:.6f} '
-                              f'| LLloss:{ll_loss:.6f} | lr_gan:{get_lr(G_optimizer):.8f}')
-
-            G_loss_list.append(G_loss)
-            D_loss_list.append(D_loss)
+                    fake_dir = os.path.join(args.dataroot, "train", "B", str(id_layer))
+                    if not os.path.exists(fake_dir):
+                        os.mkdir(fake_dir)
+                    batch_size = layer_imgs.size(0)
+                    im_name = sample['A_path']
+                    for b in range(batch_size):
+                        file_name = osp.split(im_name[b])[-1].split('.')[0]
+                        fake_file = osp.join(fake_dir, f'{file_name}.png')
+                        from_std_tensor_save_image(filename=fake_file, data=fakes[b].cpu())
 
 
-            # tensorboard log
-            if args.tensorboard_log and step % args.tensorboard_log == 0:  # defalut is 5
-                total_steps = epoch * len(data_loader) + step
-                sw.add_scalar('Loss1/G', G_loss, total_steps)
-                sw.add_scalar('Loss1/seg', seg_loss, total_steps)
-                sw.add_scalar('Loss1/G_seg', G_seg_loss, total_steps)
-                sw.add_scalar('Loss/G', G_loss, total_steps)
-                sw.add_scalar('Loss/D', D_loss, total_steps)
-                sw.add_scalar('Loss/gan', gan_loss, total_steps)
-                sw.add_scalar('Loss/vgg', vgg_loss, total_steps)
-                sw.add_scalar('Loss/df', df_loss, total_steps)
-                sw.add_scalar('Loss/ll', ll_loss, total_steps)
-                # sw.add_scalar('Loss/CE', ce_loss_value, total_steps)
-                # sw.add_scalar('Loss/LVS', lvs_loss_value, total_steps)
-                # sw.add_scalar('Loss/focal', focal_loss_value, total_steps)
-                sw.add_scalar('LR/G', get_lr(G_optimizer), total_steps)
-                sw.add_scalar('LR/D', get_lr(D_optimizer), total_steps)
+                    fakes_maps = torch.cat([layer_imgs.float(), fakes.float(), ], dim=1)
+                    # fakes_maps = torch.cat([imgs.float(), fakes.float()], dim=1)
+
+                    D_real_outs = D(reals_maps)
+                    D_real_loss = GANLoss(D_real_outs, True)
+
+                    D_fake_outs = D(fakes_maps)
+                    D_fake_loss = GANLoss(D_fake_outs, False)
+
+                    D_loss = 0.5 * (D_real_loss + D_fake_loss)
+                    D_loss = D_loss.mean()
+                    D_loss.backward()
+                    D_loss = D_loss.item()
+                    D_optimizer.step()
+
+                    # train generator and encoder
+                    # G_optimizer.zero_grad()
+                    fakes = G(imgs_plus)
 
 
-                sw.add_image('img2/realA', tensor2im(imgs.data), total_steps, dataformats='HWC')
-                sw.add_image('img2/fakeB', tensor2im(fakes.data), total_steps, dataformats='HWC')
-                sw.add_image('img2/realB', tensor2im(maps.data), total_steps, dataformats='HWC')
-                # tmpsegmap = pred2gray(outputs)
-                tmpsegmap = tmpsegmap[0].data.numpy()
-                tmpsegmap = gray2rgb(tmpsegmap)
-                sw.add_image('img2/fake_segB', tmpsegmap, total_steps, dataformats='HWC')
-                tmpsegmap = label_imgs[0].data.cpu().numpy()
-                tmpsegmap = gray2rgb(tmpsegmap)
-                sw.add_image('img2/real_segB', tmpsegmap, total_steps, dataformats='HWC')
+                    fakes_maps = torch.cat([layer_imgs.float(), fakes.float()], dim=1)
+                    # fakes_maps = torch.cat([imgs.float(), fakes.float()], dim=1)
+                    D_fake_outs = D(fakes_maps)
+
+                    gan_loss = GANLoss(D_fake_outs, True)
+
+                    G_loss = 0
+                    G_loss += gan_loss
+                    gan_loss = gan_loss.mean().item()
+
+                    if args.use_vgg_loss:
+                        vgg_loss = VGGLoss(fakes, layer_imgs)
+                        G_loss += args.lambda_feat * vgg_loss
+                        vgg_loss = vgg_loss.mean().item()
+                    else:
+                        vgg_loss = 0.
+
+                    if args.use_ganFeat_loss:
+                        df_loss = DFLoss(D_fake_outs, D_real_outs)
+                        G_loss += args.lambda_feat * df_loss
+                        df_loss = df_loss.mean().item()
+                    else:
+                        df_loss = 0.
+
+                    if args.use_low_level_loss:
+                        ll_loss = LLLoss(fakes, target_layer_img)
+                        G_loss += args.lambda_feat * ll_loss
+                        ll_loss = ll_loss.mean().item()
+                    else:
+                        ll_loss = 0.
+
+                    G_loss = G_loss.mean()
+                    G_loss.backward()
+
+                    G_loss = G_loss.item()
+
+                    G_optimizer.zero_grad()
+
+
+                    G_optimizer.step()
+
+
+                    data_loader.write(f'Epochs:{epoch}  | Dloss:{D_loss:.6f} | Gloss:{G_loss:.6f}'
+                                      f'| GANloss:{gan_loss:.6f} | VGGloss:{vgg_loss:.6f} | DFloss:{df_loss:.6f} '
+                                      f'| LLloss:{ll_loss:.6f} | lr_gan:{get_lr(G_optimizer):.8f}')
+
+                    G_loss_list.append(G_loss)
+                    D_loss_list.append(D_loss)
+
+
+                    # tensorboard log
+                    if args.tensorboard_log and step % args.tensorboard_log == 0:  # defalut is 5
+                        total_steps = epoch * len(data_loader) + step
+                        sw.add_scalar('Loss1/G', G_loss, total_steps)
+                        sw.add_scalar('Loss/G', G_loss, total_steps)
+                        sw.add_scalar('Loss/D', D_loss, total_steps)
+                        sw.add_scalar('Loss/gan', gan_loss, total_steps)
+                        sw.add_scalar('Loss/vgg', vgg_loss, total_steps)
+                        sw.add_scalar('Loss/df', df_loss, total_steps)
+                        sw.add_scalar('Loss/ll', ll_loss, total_steps)
+
+                        sw.add_scalar('LR/G', get_lr(G_optimizer), total_steps)
+                        sw.add_scalar('LR/D', get_lr(D_optimizer), total_steps)
+
+
+                        sw.add_image('img2/realA', tensor2im(layer_imgs.data), total_steps, dataformats='HWC')
+                        sw.add_image('img2/fakeB', tensor2im(fakes.data), total_steps, dataformats='HWC')
+                        sw.add_image('img2/realB', tensor2im(target_layer_img.data), total_steps, dataformats='HWC')
+
 
         D_scheduler.step(epoch)
         G_scheduler.step(epoch)
 
-        if epoch % 10 == 0 or epoch == (args.epochs-1):
+        if epoch == (args.epochs-1):
             import copy
             args2=copy.deepcopy(args)
             args2.batch_size=args.batch_size_eval
-            eval_fidiou(args, model_G=G, data_loader=get_pix2pix_maps_dataloader(args2, train=False))
+            eval_fidiou(args, model_G=G)
 
 
         logger.log(key='D_loss', data=sum(D_loss_list) / float(len(D_loss_list)))

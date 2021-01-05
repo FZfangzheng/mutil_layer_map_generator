@@ -39,6 +39,7 @@ def config():
 
     # 确保复�
     parser.add_argument('--if_mutil_layer', type=int, default=0, help='mutil_layer, 0 is not ')
+    parser.add_argument('--layer_num', type=int, default=4, help='num of layer ')
     parser.add_argument('--seed', type=int, default=666, help='random seed, 0-65535')
     # 分割新增参数
     parser.add_argument('--seg_lr_global', type=float, default=0.0007, help='The Learning Rate if seg-model.')
