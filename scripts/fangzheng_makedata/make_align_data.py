@@ -29,8 +29,8 @@ def make_inter_dataset():
     pt=[[224,39],[195,79],[138,157],[23,312]]
     h=256
     w=256
-    # image_dir_path = r"/data/multilayer_map_project/map_repaint_for_show"
-    image_dir_path = r"/data/multilayer_map_project/out_mutil_layer_mix4_70_50epoch/newfake_result_for_show"
+    image_dir_path = r"/data/multilayer_map_project/rs_repaint_for_show"
+    #image_dir_path = r"/data/multilayer_map_project/out_mutil_layer_mix4_70_50epoch/newfake_result_for_show"
     id_layer=["14all","15all","16all","17all"]
     for i in range(len(id_layer)):
         img_path = os.path.join(image_dir_path,id_layer[i],"all.png")
@@ -46,10 +46,10 @@ def make_inter_dataset():
             for n in range(len_y):
                 box = (pt[i][0]+w*m, pt[i][1]+h*n, pt[i][0]+w*(m+1), pt[i][1]+h*(n+1))
                 region = img.crop(box)
-                region.save('/data/multilayer_map_project/align_data_test/{}_{}_{}.png'.format(i+1,m+1,n+1))
+                region.save('/data/multilayer_map_project/align_data/all_data/RS_O/{}_{}_{}.png'.format(i+1,m+1,n+1))
                 print('{},{}'.format(m,n))
-def make_final_inter_dataset():
-    path = r"/data/multilayer_map_project/align_data/test/A"
+def make_final_inter_dataset(path=""):
+    path = r"/data/multilayer_map_project/align_data/all_data/RS_O"
     img_list = make_dataset(path)
     for img in img_list:
         img_name = os.path.split(img)[-1]
@@ -58,7 +58,7 @@ def make_final_inter_dataset():
         if not os.path.exists(path_layer):
             os.mkdir(path_layer)
         new_img_path = os.path.join(path_layer, img_name)
-        shutil.cp(img,new_img_path)
+        shutil.copy(img,new_img_path)
         print(new_img_path)
 
 def make_train_test():
@@ -151,7 +151,8 @@ def test_merge():
     B.save(os.path.join(answer_dir,
                         str(id_layer) + "_" + str(index_x) + "_" + str(index_y)) + ".png")
 if __name__ == '__main__':
-    test_merge()
-    # make_inter_dataset()
-    # make_final_inter_dataset()
+    # test_merge()
+    #make_inter_dataset()
+    make_final_inter_dataset()
     # make_train_test()
+    #make_final_inter_dataset("/data/multilayer_map_project/inter1_2/fake_result")

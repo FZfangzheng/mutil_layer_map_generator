@@ -8,6 +8,7 @@ from PIL import Image
 from util.my_util import get_inner_path
 import cv2
 import numpy as np
+import math
 from tqdm import tqdm
 
 
@@ -232,3 +233,135 @@ class AlignedDataset_Inter1(BaseDataset):
 
     def name(self):
         return 'AlignedDataset_Inter1'
+
+class AlignedDataset_Inter2(BaseDataset):
+    def initialize(self, opt, id_layer):
+        self.size = opt.loadSize
+        self.opt = opt
+        self.id_layer = id_layer
+        self.root = opt.dataroot
+        self.dir_A = os.path.join(opt.dataroot, opt.phase, "B", str(id_layer))
+        self.dir_B = os.path.join(opt.dataroot, opt.phase, "B1", str(id_layer-1))
+        self.dir_C = os.path.join(opt.dataroot, opt.phase, "C", str(id_layer))
+
+
+        self.A_paths = sorted(make_dataset(self.dir_A))
+        self.C_paths = sorted(make_dataset(self.dir_C))
+
+        transform_list = [transforms.ToTensor(),  # Totensor操作会将img/ndarray转化至0~1的FloatTensor
+                          transforms.Normalize((0.5, 0.5, 0.5),
+                                               (0.5, 0.5, 0.5))]  # mean ,std;  result=(x-mean)/std
+
+        self.transform = transforms.Compose(transform_list)  # 串联组合
+
+
+    def __getitem__(self, index):
+
+        A_path = self.A_paths[index]
+        C_path = self.C_paths[index]
+        A = Image.open(A_path).convert('RGB')
+        C = Image.open(C_path).convert('RGB')
+        A = self.transform(A)
+        C = self.transform(C)
+
+        img_name = os.path.split(A_path)[1]
+        img_name_split = img_name.split("_")
+        index_x = int(img_name_split[1])
+        index_y = int(img_name_split[2].split(".")[0])
+
+        B_all_path = os.path.join(self.dir_B,
+                               str(self.id_layer - 1) + "_" + str(math.ceil(index_x/2)) + "_" + str(math.ceil(index_y/2))+".png")
+        if index_x%2==0:
+            ix = 1
+        else:
+            ix = 0
+        if index_y%2==0:
+            iy = 1
+        else:
+            iy = 0
+
+        B_all = Image.open(B_all_path).convert('RGB')
+        B_all = B_all.resize((self.size*2, self.size*2), Image.ANTIALIAS)
+        B = B_all.crop((ix*self.size, iy*self.size, ix*self.size+self.size, iy*self.size+self.size))
+
+        # B = B.resize((self.size, self.size), Image.ANTIALIAS)
+        B.save(os.path.join(self.root, self.opt.phase, "tmp_B",
+                            str(self.id_layer) + "_" + str(index_x) + "_" + str(index_y)) + ".png")
+
+        B = self.transform(B)
+
+        return {'A': A, 'B': B, 'C':C, 'A_path': A_path, 'C_path': C_path}
+
+    def __len__(self):
+        return len(self.A_paths)
+
+    def name(self):
+        return 'AlignedDataset_Inter2'
+
+class AlignedDataset_Inter3(BaseDataset):
+    def initialize(self, opt, id_layer):
+        self.size = opt.loadSize
+        self.opt = opt
+        self.id_layer = id_layer
+        self.root = opt.dataroot
+        self.dir_A = os.path.join(opt.dataroot, opt.phase, "A", str(id_layer))
+        self.dir_B = os.path.join(opt.dataroot, opt.phase, "B", str(id_layer+1))
+        self.dir_C = os.path.join(opt.dataroot, opt.phase, "C", str(id_layer))
+
+
+        self.A_paths = sorted(make_dataset(self.dir_A))
+        self.C_paths = sorted(make_dataset(self.dir_C))
+
+        transform_list = [transforms.ToTensor(),  # Totensor操作会将img/ndarray转化至0~1的FloatTensor
+                          transforms.Normalize((0.5, 0.5, 0.5),
+                                               (0.5, 0.5, 0.5))]  # mean ,std;  result=(x-mean)/std
+
+        self.transform = transforms.Compose(transform_list)  # 串联组合
+
+
+    def __getitem__(self, index):
+
+        A_path = self.A_paths[index]
+        C_path = self.C_paths[index]
+        A = Image.open(A_path).convert('RGB')
+        C = Image.open(C_path).convert('RGB')
+        A = self.transform(A)
+        C = self.transform(C)
+
+        img_name = os.path.split(A_path)[1]
+        img_name_split = img_name.split("_")
+        index_x = int(img_name_split[1])
+        index_y = int(img_name_split[2].split(".")[0])
+
+        B1_path = os.path.join(self.dir_B,
+                               str(self.id_layer + 1) + "_" + str(index_x * 2 - 1) + "_" + str(index_y * 2 - 1)+".png")
+        B2_path = os.path.join(self.dir_B,
+                               str(self.id_layer + 1) + "_" + str(index_x * 2 - 1) + "_" + str(index_y * 2)+".png")
+        B3_path = os.path.join(self.dir_B,
+                               str(self.id_layer + 1) + "_" + str(index_x * 2) + "_" + str(index_y * 2 - 1)+".png")
+        B4_path = os.path.join(self.dir_B,
+                               str(self.id_layer + 1) + "_" + str(index_x * 2) + "_" + str(index_y * 2)+".png")
+        B1 = Image.open(B1_path).convert('RGB')
+        B2 = Image.open(B2_path).convert('RGB')
+        B3 = Image.open(B3_path).convert('RGB')
+        B4 = Image.open(B4_path).convert('RGB')
+
+        B = Image.new('RGB', (2 * self.size, 2 * self.size))  # 创建一个新图
+        B.paste(B1, (0*self.size, 0*self.size))
+        B.paste(B2, (0*self.size, 1*self.size))
+        B.paste(B3, (1*self.size, 0*self.size))
+        B.paste(B4, (1*self.size, 1*self.size))
+
+        B = B.resize((self.size, self.size), Image.ANTIALIAS)
+        B.save(os.path.join(self.root, self.opt.phase, "tmp_B",
+                            str(self.id_layer) + "_" + str(index_x) + "_" + str(index_y)) + ".png")
+
+        B = self.transform(B)
+
+        return {'A': A, 'B': B, 'C':C, 'A_path': A_path, 'C_path': C_path}
+
+    def __len__(self):
+        return len(self.A_paths)
+
+    def name(self):
+        return 'AlignedDataset_Inter3'

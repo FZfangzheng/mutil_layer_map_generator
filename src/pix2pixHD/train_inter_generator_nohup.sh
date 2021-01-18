@@ -1,6 +1,6 @@
 CUDA_VISIBLE_DEVICES=0 nohup python my_train_img2map_single_interlevelgenerator_level1.py \
 --dataroot /data/multilayer_map_project/align_data \
---save /data/multilayer_map_project/inter_100 \
+--save /data/multilayer_map_project/inter1_2 \
 --gpu 1 \
 --epochs 100 \
 --batch_size 8 \

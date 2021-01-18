@@ -207,6 +207,46 @@ def get_inter1_dataloader(args, id_layer, train=True,flag=0):
                                  drop_last=False)
     return data_loader
 
+def get_inter1_dataloader(args, id_layer, train=True,flag=0):
+    #data_set = get_pix2pix_maps_dataset(args, train)
+    #data_set = AlignedDataset(args, train)
+
+    from src.data.aligned_dataset import AlignedDataset_Inter1, AlignedDataset_Inter2, AlignedDataset_Inter3
+
+    if train:
+        args.phase='train'
+        data_set = AlignedDataset_Inter1()
+        if flag==1:
+            data_set = AlignedDataset_Inter2()
+        if flag == 2:
+            data_set = AlignedDataset_Inter3()
+        data_set.initialize(args,id_layer=id_layer)
+        data_loader = DataLoader(dataset=data_set,
+                                 batch_size=args.batch_size,
+                                 shuffle=True,
+                                 num_workers=args.prefetch,
+                                 pin_memory=False,
+                                 drop_last=True)
+    else:
+        import copy
+        args2=copy.deepcopy(args)
+        args2.phase = 'test'
+        args2.no_flip=True
+        #args2.loadSize=args2.fineSize
+        args2.fineSize=args2.loadSize
+        data_set = AlignedDataset_Inter1()
+        if flag==1:
+            data_set = AlignedDataset_Inter2()
+        if flag == 2:
+            data_set = AlignedDataset_Inter3()
+        data_set.initialize(args2,id_layer=id_layer)
+        data_loader = DataLoader(dataset=data_set,
+                                 batch_size=args2.test_batch_size,
+                                 shuffle=False,
+                                 num_workers=args2.prefetch,
+                                 pin_memory=False,
+                                 drop_last=False)
+    return data_loader
 
 def get_pix2pix_maps_dataloader(args, train=True,flag=0):
     #data_set = get_pix2pix_maps_dataset(args, train)

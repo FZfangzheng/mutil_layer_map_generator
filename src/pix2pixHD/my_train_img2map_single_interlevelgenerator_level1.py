@@ -85,9 +85,9 @@ def eval_fidiou(args, model_G):
             model_G = model_G.to(device)
 
             fake_dir = osp.join(args.save, 'fake_result')
-            train_B_dir = os.path.join(args.dataroot, "train", "B", str(id_layer))
-
+            test_B_dir = os.path.join(args.dataroot, "test", "B", str(id_layer))
             create_dir(fake_dir)
+            create_dir(test_B_dir)
 
             for i, sample in enumerate(data_loader):
                 layer_imgs = sample['A'].to(device)
@@ -101,8 +101,9 @@ def eval_fidiou(args, model_G):
                 for b in range(batch_size):
                     file_name = osp.split(im_name[b])[-1].split('.')[0]
                     fake_file=osp.join(fake_dir, f'{file_name}.png')
+                    test_B_file = osp.join(test_B_dir, f'{file_name}.png')
                     from_std_tensor_save_image(filename=fake_file, data=fakes[b].cpu())
-                    from_std_tensor_save_image(filename=train_B_dir, data=fakes[b].cpu())
+                    from_std_tensor_save_image(filename=test_B_file, data=fakes[b].cpu())
 
     model_G.train()
 
@@ -158,11 +159,11 @@ def train(args, get_dataloader_func=get_pix2pix_maps_dataloader):
 
 
 
-    if epoch_now==args.epochs:
+    if epoch_now==args.epochs or args.epochs==-1:
         print('get final models')
         eval_fidiou(args, model_G=G)
 
-
+    total_steps=0
     for epoch in range(epoch_now, args.epochs):
         G_loss_list = []
         D_loss_list = []
@@ -186,6 +187,7 @@ def train(args, get_dataloader_func=get_pix2pix_maps_dataloader):
                 data_loader = tqdm(data_loader)
 
                 for step, sample in enumerate(data_loader):
+                    total_steps=total_steps+1
                     layer_imgs = sample['A'].to(device)
                     final_before_img = sample['B'].to(device)
                     target_layer_img = sample['C'].to(device)
@@ -208,6 +210,27 @@ def train(args, get_dataloader_func=get_pix2pix_maps_dataloader):
                         file_name = osp.split(im_name[b])[-1].split('.')[0]
                         fake_file = osp.join(fake_dir, f'{file_name}.png')
                         from_std_tensor_save_image(filename=fake_file, data=fakes[b].cpu())
+
+
+                    A_training_dir = os.path.join(args.dataroot, "train", "A_training", str(id_layer))
+                    if not os.path.exists(A_training_dir):
+                        os.mkdir(A_training_dir)
+                    batch_size = layer_imgs.size(0)
+
+                    for b in range(batch_size):
+                        file_name = osp.split(im_name[b])[-1].split('.')[0]
+                        A_training_file = osp.join(A_training_dir, f'{file_name}.png')
+                        from_std_tensor_save_image(filename=A_training_file, data=layer_imgs[b].cpu())
+
+                    C_training_dir = os.path.join(args.dataroot, "train", "C_training", str(id_layer))
+                    if not os.path.exists(C_training_dir):
+                        os.mkdir(C_training_dir)
+                    batch_size = layer_imgs.size(0)
+
+                    for b in range(batch_size):
+                        file_name = osp.split(im_name[b])[-1].split('.')[0]
+                        C_training_file = osp.join(C_training_dir, f'{file_name}.png')
+                        from_std_tensor_save_image(filename=C_training_file, data=target_layer_img[b].cpu())
 
 
                     fakes_maps = torch.cat([layer_imgs.float(), fakes.float(), ], dim=1)
@@ -262,15 +285,12 @@ def train(args, get_dataloader_func=get_pix2pix_maps_dataloader):
                         ll_loss = 0.
 
                     G_loss = G_loss.mean()
-                    G_loss.backward()
-
-                    G_loss = G_loss.item()
-
                     G_optimizer.zero_grad()
-
+                    G_loss.backward()
 
                     G_optimizer.step()
 
+                    G_loss = G_loss.item()
 
                     data_loader.write(f'Epochs:{epoch}  | Dloss:{D_loss:.6f} | Gloss:{G_loss:.6f}'
                                       f'| GANloss:{gan_loss:.6f} | VGGloss:{vgg_loss:.6f} | DFloss:{df_loss:.6f} '
@@ -282,8 +302,8 @@ def train(args, get_dataloader_func=get_pix2pix_maps_dataloader):
 
                     # tensorboard log
                     if args.tensorboard_log and step % args.tensorboard_log == 0:  # defalut is 5
-                        total_steps = epoch * len(data_loader) + step
-                        sw.add_scalar('Loss1/G', G_loss, total_steps)
+                        # total_steps = epoch * len(data_loader) + step
+                        # sw.add_scalar('Loss1/G', G_loss, total_steps)
                         sw.add_scalar('Loss/G', G_loss, total_steps)
                         sw.add_scalar('Loss/D', D_loss, total_steps)
                         sw.add_scalar('Loss/gan', gan_loss, total_steps)
@@ -295,19 +315,18 @@ def train(args, get_dataloader_func=get_pix2pix_maps_dataloader):
                         sw.add_scalar('LR/D', get_lr(D_optimizer), total_steps)
 
 
-                        sw.add_image('img2/realA', tensor2im(layer_imgs.data), total_steps, dataformats='HWC')
-                        sw.add_image('img2/fakeB', tensor2im(fakes.data), total_steps, dataformats='HWC')
-                        sw.add_image('img2/realB', tensor2im(target_layer_img.data), total_steps, dataformats='HWC')
+                        sw.add_image('img2/A', tensor2im(layer_imgs.data), total_steps, dataformats='HWC')
+                        sw.add_image('img2/B', tensor2im(final_before_img.data), total_steps, dataformats='HWC')
+
+
+                        sw.add_image('img2/C', tensor2im(target_layer_img.data), total_steps, dataformats='HWC')
+                        sw.add_image('img2/fake', tensor2im(fakes.data), total_steps, dataformats='HWC')
 
 
         D_scheduler.step(epoch)
         G_scheduler.step(epoch)
 
-        if epoch == (args.epochs-1):
-            import copy
-            args2=copy.deepcopy(args)
-            args2.batch_size=args.batch_size_eval
-            eval_fidiou(args, model_G=G)
+
 
 
         logger.log(key='D_loss', data=sum(D_loss_list) / float(len(D_loss_list)))
@@ -328,6 +347,11 @@ def train(args, get_dataloader_func=get_pix2pix_maps_dataloader):
         model_saver.save('D_scheduler', D_scheduler)
 
 
+        if epoch == (args.epochs-1):
+            import copy
+            args2=copy.deepcopy(args)
+            args2.batch_size=args.batch_size_eval
+            eval_fidiou(args, model_G=G)
 
 
 if __name__ == '__main__':

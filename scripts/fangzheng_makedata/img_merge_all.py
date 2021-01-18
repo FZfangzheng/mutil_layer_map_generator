@@ -45,8 +45,8 @@ def image_compose(img_path):
 
 
 if __name__ == "__main__":
-    save_path = r"/data/multilayer_map_project/map_repaint_for_show/17all"
-    map_path = r"/data/multilayer_map_project/map_repaint_for_show/17"
+    save_path = r"/data/multilayer_map_project/rs_repaint_for_show/14all"
+    map_path = r"/data/multilayer_map_project/rs_repaint_for_show/14"
     if not os.path.exists(save_path):
         os.makedirs(save_path)
     image_list_low = make_dataset(map_path)
