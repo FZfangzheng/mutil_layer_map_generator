@@ -145,20 +145,20 @@ def eval_fidiou(args, sw, model_G, epoch=-1):
 
     rets = eval_epoch(real_paths,fake_paths,epoch, eval_dir)
     if epoch != -1:
-        sw.add_scalar('eval/kid_mean', rets.kid_mean, int(epoch/10))
-        sw.add_scalar('eval/fid', rets.fid, int(epoch / 10))
-        sw.add_scalar('eval/kNN', rets.kNN, int(epoch / 10))
-        sw.add_scalar('eval/K_MMD', rets.K_MMD, int(epoch / 10))
-        sw.add_scalar('eval/WD', rets.WD, int(epoch / 10))
-        sw.add_scalar('eval/_IS', rets._IS, int(epoch/10))
-        sw.add_scalar('eval/_MS', rets._MS, int(epoch / 10))
-        sw.add_scalar('eval/_mse_skimage', rets._mse_skimage, int(epoch / 10))
-        sw.add_scalar('eval/_ssim_skimage', rets._ssim_skimage, int(epoch / 10))
-        sw.add_scalar('eval/_ssimrgb_skimage', rets._ssimrgb_skimage, int(epoch / 10))
-        sw.add_scalar('eval/_psnr_skimage', rets._psnr_skimage, int(epoch / 10))
-        sw.add_scalar('eval/_kid_std', rets._kid_std, int(epoch / 10))
-        sw.add_scalar('eval/_fid_inkid_mean', rets._fid_inkid_mean, int(epoch / 10))
-        sw.add_scalar('eval/_fid_inkid_std', rets._fid_inkid_std, int(epoch / 10))
+        sw.add_scalar('eval/kid_mean', rets[0].kid_mean, int(epoch/10))
+        sw.add_scalar('eval/fid', rets[0].fid, int(epoch / 10))
+        sw.add_scalar('eval/kNN', rets[0].kNN, int(epoch / 10))
+        sw.add_scalar('eval/K_MMD', rets[0].K_MMD, int(epoch / 10))
+        sw.add_scalar('eval/WD', rets[0].WD, int(epoch / 10))
+        sw.add_scalar('eval/_IS', rets[0]._IS, int(epoch/10))
+        sw.add_scalar('eval/_MS', rets[0]._MS, int(epoch / 10))
+        sw.add_scalar('eval/_mse_skimage', rets[0]._mse_skimage, int(epoch / 10))
+        sw.add_scalar('eval/_ssim_skimage', rets[0]._ssim_skimage, int(epoch / 10))
+        sw.add_scalar('eval/_ssimrgb_skimage', rets[0]._ssimrgb_skimage, int(epoch / 10))
+        sw.add_scalar('eval/_psnr_skimage', rets[0]._psnr_skimage, int(epoch / 10))
+        sw.add_scalar('eval/_kid_std', rets[0]._kid_std, int(epoch / 10))
+        sw.add_scalar('eval/_fid_inkid_mean', rets[0]._fid_inkid_mean, int(epoch / 10))
+        sw.add_scalar('eval/_fid_inkid_std', rets[0]._fid_inkid_std, int(epoch / 10))
     model_G.train()
 
 
@@ -264,27 +264,6 @@ def train(args, get_dataloader_func=get_pix2pix_maps_dataloader):
                         file_name = osp.split(im_name[b])[-1].split('.')[0]
                         fake_file = osp.join(fake_dir, f'{file_name}.png')
                         from_std_tensor_save_image(filename=fake_file, data=fakes[b].cpu())
-
-
-                    A_training_dir = os.path.join(args.dataroot, "train", "A_training", str(id_layer))
-                    if not os.path.exists(A_training_dir):
-                        os.mkdir(A_training_dir)
-                    batch_size = layer_imgs.size(0)
-
-                    for b in range(batch_size):
-                        file_name = osp.split(im_name[b])[-1].split('.')[0]
-                        A_training_file = osp.join(A_training_dir, f'{file_name}.png')
-                        from_std_tensor_save_image(filename=A_training_file, data=layer_imgs[b].cpu())
-
-                    C_training_dir = os.path.join(args.dataroot, "train", "C_training", str(id_layer))
-                    if not os.path.exists(C_training_dir):
-                        os.mkdir(C_training_dir)
-                    batch_size = layer_imgs.size(0)
-
-                    for b in range(batch_size):
-                        file_name = osp.split(im_name[b])[-1].split('.')[0]
-                        C_training_file = osp.join(C_training_dir, f'{file_name}.png')
-                        from_std_tensor_save_image(filename=C_training_file, data=target_layer_img[b].cpu())
 
 
                     fakes_maps = torch.cat([layer_imgs.float(), fakes.float(), ], dim=1)

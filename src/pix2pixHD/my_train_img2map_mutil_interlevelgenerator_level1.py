@@ -10,6 +10,7 @@ sys.path.append(osp.join(sys.path[0], '../../'))
 # sys.path.append(osp.join(sys.path[0], '../../../'))
 import time
 import torch
+import shutil
 import torch.nn as nn
 from src.utils.train_utils import model_accelerate, get_device, mean, get_lr
 from src.pix2pixHD.train_config import config
@@ -18,6 +19,7 @@ from torch.optim import Adam
 from src.pix2pixHD.hinge_lr_scheduler import get_hinge_scheduler
 from src.utils.logger import ModelSaver, Logger
 from src.datasets import get_pix2pix_maps_dataloader
+from src.datasets.pix2pix_maps import get_inter1_dataloader
 from src.pix2pixHD.utils import get_edges, label_to_one_hot, get_encode_features
 from src.utils.visualizer import Visualizer
 from tqdm import tqdm
@@ -42,98 +44,125 @@ from src.pix2pixHD.myutils import pred2gray, gray2rgb
 from src.pix2pixHD.deeplabv3plus.focal_loss import FocalLoss
 from evaluation.fid.fid_score import fid_score
 import json
+from src.eval.eval_every10epoch import eval_epoch
 
-def eval_fidiou(args, model_G,model_seg, data_loader):
-    device = get_device(args)
-    data_loader = tqdm(data_loader)
-    model_G.eval()
-    model_seg.eval()
-    model_G = model_G.to(device)
-    model_seg = model_seg.to(device)
+IMG_EXTENSIONS = [
+    '.jpg', '.JPG', '.jpeg', '.JPEG',
+    '.png', '.PNG', '.ppm', '.PPM', '.bmp', '.BMP','.tif',
+]
 
-    label_preds = []
-    label_targets = []
+def is_image_file(filename):
+    return any(filename.endswith(extension) for extension in IMG_EXTENSIONS)
 
-    real_seg_dir = osp.join(args.save, 'real_seg')
+def make_dataset(dir):
+    images = []
+    assert os.path.isdir(dir), '%s is not a valid directory' % dir
+    for root, _, fnames in sorted(os.walk(dir)):
+        for fname in fnames:
+            if is_image_file(fname):
+                path = os.path.join(root, fname)
+                images.append(path)
+    return images
+
+def eval_fidiou(args, sw, model_G, epoch=-1):
+    fake_dir = osp.join(args.save, 'fake_result')
     real_dir = osp.join(args.save, 'real_result')
-    A_dir = osp.join(args.save, 'real_source')
-    seg_dir = osp.join(args.save, 'seg_result')
-    fake_dir=osp.join(args.save, 'fake_result')
-    create_dir(real_dir)
-    create_dir(real_seg_dir)
-    create_dir(A_dir)
-    create_dir(seg_dir)
+    eval_dir = osp.join(args.save, 'eval_result')
     create_dir(fake_dir)
+    create_dir(real_dir)
+    create_dir(eval_dir)
+    for layer in range(args.layer_num):
+        # start from layer_num
+        id_layer = args.layer_num - layer
+        if layer == 0:
+            real_img_path = os.path.join(real_dir, str(id_layer))
+            fake_img_path = os.path.join(fake_dir, str(id_layer))
+            before_img_path = os.path.join(args.dataroot, "test", "A", str(id_layer))
+            after_img_path = os.path.join(args.dataroot, "test", "B", str(id_layer))
+            gt_img_path = os.path.join(args.dataroot, "test", "C", str(id_layer))
+            create_dir(after_img_path)
+            create_dir(real_img_path)
+            create_dir(fake_img_path)
+            img_list = make_dataset(before_img_path)
+            for img_before in img_list:
+                img_name = os.path.split(img_before)[1]
+                img_after = os.path.join(after_img_path, img_name)
+                img_real = os.path.join(real_img_path, img_name)
+                img_fake = os.path.join(fake_img_path, img_name)
+                img_gt = os.path.join(gt_img_path, img_name)
+                shutil.copy(img_before, img_after)
+                shutil.copy(img_before, img_fake)
+                shutil.copy(img_gt, img_real)
+        else:
+            data_loader = get_inter1_dataloader(args, id_layer, train=False)
+            data_loader = tqdm(data_loader)
+            model_G[layer-1].eval()
+            device = get_device(args)
+            model_G[layer-1] = model_G[layer-1].to(device)
 
-    for i, sample in enumerate(data_loader):
-        inputs, labels = sample['A_seg'], sample['seg'].squeeze(dim=1)
-        inputs = inputs.cuda() if args.gpu else inputs
-        labels = labels.cuda() if args.gpu else labels
-        imgs = sample['A'].to(device)
-        maps = sample['B'].to(device)
+            fake_img_dir = osp.join(fake_dir, str(id_layer))
+            real_img_dir = os.path.join(real_dir, str(id_layer))
+            test_B_dir = os.path.join(args.dataroot, "test", "B", str(id_layer))
+            create_dir(fake_img_dir)
+            create_dir(real_img_dir)
+            create_dir(test_B_dir)
 
-        id_layer_np = []
-        im_path = sample['A_paths']
-        for i in range(args.test_batch_size):
-            num_layer=int(im_path[i].split(os.sep)[-2])
-            id_layer_np.append(np.full((1,args.fineSize,args.fineSize),num_layer))
+            for i, sample in enumerate(data_loader):
+                layer_imgs = sample['A'].to(device)
+                final_before_img = sample['B'].to(device)
+                gt_imgs = sample['C'].to(device)
 
-        outputs, feature_map = model_seg(inputs)
-        bs, n_class, h, w = outputs.shape
-        outs = outputs.data.cpu().numpy()
-        pred = outs.transpose(0, 2, 3, 1).reshape(-1, n_class).argmax(axis=1).reshape(bs, h, w)
-        target = labels.cpu().numpy().reshape(bs, h, w)
-        label_preds.append(pred)
-        label_targets.append(target)
+                imgs_plus = torch.cat((layer_imgs.float(),final_before_img.float()),1)
+                fakes = model_G[layer-1](imgs_plus).detach()
 
-        # seg_ret = pred2gray(outputs).unsqueeze(1).type(torch.FloatTensor).to(device)  # bs*1*h*w
-        feature_map = feature_map.detach()
-        id_layer = torch.from_numpy(np.array(id_layer_np)).to(device)
-        imgs_plus=torch.cat((imgs,feature_map,id_layer.float()),1)
-        fakes = model_G(imgs_plus).detach()
+                batch_size = layer_imgs.size(0)
+                im_name = sample['A_path']
+                for b in range(batch_size):
+                    file_name = osp.split(im_name[b])[-1].split('.')[0]
+                    real_file = osp.join(real_img_dir, f'{file_name}.png')
+                    fake_file = osp.join(fake_img_dir, f'{file_name}.png')
+                    test_B_file = osp.join(test_B_dir, f'{file_name}.png')
+                    from_std_tensor_save_image(filename=fake_file, data=fakes[b].cpu())
+                    from_std_tensor_save_image(filename=test_B_file, data=fakes[b].cpu())
+                    from_std_tensor_save_image(filename=real_file, data=gt_imgs[b].cpu())
 
-        batch_size = inputs.size(0)
-        im_name = sample['A_paths']
-        for b in range(batch_size):
-            file_name = osp.split(im_name[b])[0].split(os.sep)[-1]+osp.split(im_name[b])[-1].split('.')[0]
-            real_file = osp.join(real_dir, f'{file_name}.tif')
-            real_seg_file = osp.join(real_seg_dir, f'{file_name}.tif')
-            A_file = osp.join(A_dir, f'{file_name}.tif')
-            seg_file = osp.join(seg_dir, f'{file_name}.tif')
-            fake_file=osp.join(fake_dir, f'{file_name}.tif')
+    real_img_list = make_dataset(real_dir)
+    fake_img_list = make_dataset(fake_dir)
+    new_fake_dir = osp.join(args.save, 'fake_result_without_layer')
+    new_real_dir = osp.join(args.save, 'real_result_without_layer')
+    create_dir(new_fake_dir)
+    create_dir(new_real_dir)
+    for real_img in real_img_list:
+        img_name = osp.split(real_img)[-1]
+        new_real_img_path = osp.join(new_real_dir, img_name)
+        shutil.copy(real_img, new_real_img_path)
+    for fake_img in fake_img_list:
+        img_name = osp.split(fake_img)[-1]
+        new_fake_img_path = osp.join(new_fake_dir, img_name)
+        shutil.copy(fake_img, new_fake_img_path)
+    real_paths = [osp.join(real_dir,"1"),osp.join(real_dir,"2"),osp.join(real_dir,"3"),osp.join(real_dir,"4")]
+    fake_paths = [osp.join(fake_dir, "1"), osp.join(fake_dir, "2"), osp.join(fake_dir, "3"), osp.join(fake_dir, "4")]
 
-            from_std_tensor_save_image(filename=real_file, data=sample['B'][b].cpu())
-            from_std_tensor_save_image(filename=A_file, data=sample['A'][b].cpu())
-            from_std_tensor_save_image(filename=fake_file, data=fakes[b].cpu())
-            tmpimg= sample['seg'][b].data.cpu().numpy()
-            tmpimg = gray2rgb(tmpimg)
-            tmpimg=Image.fromarray(tmpimg)
-            tmpimg.save(fp=real_seg_file)
+    rets = eval_epoch(real_paths,fake_paths,epoch, eval_dir)
+    if epoch != -1:
+        sw.add_scalar('eval/kid_mean', rets[0].kid_mean, int(epoch/10))
+        sw.add_scalar('eval/fid', rets[0].fid, int(epoch / 10))
+        sw.add_scalar('eval/kNN', rets[0].kNN, int(epoch / 10))
+        sw.add_scalar('eval/K_MMD', rets[0].K_MMD, int(epoch / 10))
+        sw.add_scalar('eval/WD', rets[0].WD, int(epoch / 10))
+        sw.add_scalar('eval/_IS', rets[0]._IS, int(epoch/10))
+        sw.add_scalar('eval/_MS', rets[0]._MS, int(epoch / 10))
+        sw.add_scalar('eval/_mse_skimage', rets[0]._mse_skimage, int(epoch / 10))
+        sw.add_scalar('eval/_ssim_skimage', rets[0]._ssim_skimage, int(epoch / 10))
+        sw.add_scalar('eval/_ssimrgb_skimage', rets[0]._ssimrgb_skimage, int(epoch / 10))
+        sw.add_scalar('eval/_psnr_skimage', rets[0]._psnr_skimage, int(epoch / 10))
+        sw.add_scalar('eval/_kid_std', rets[0]._kid_std, int(epoch / 10))
+        sw.add_scalar('eval/_fid_inkid_mean', rets[0]._fid_inkid_mean, int(epoch / 10))
+        sw.add_scalar('eval/_fid_inkid_std', rets[0]._fid_inkid_std, int(epoch / 10))
+    model_G[0].train()
+    model_G[1].train()
+    model_G[2].train()
 
-            tmpimg = gray2rgb(pred[b])
-            tmpimg = Image.fromarray(tmpimg)
-            tmpimg.save(fp=seg_file)
-
-    fid = fid_score(real_path=real_dir, fake_path=fake_dir, gpu=str(args.gpu))
-    print(f'===> fid score:{fid:.4f}')
-    iou=None
-    from src.pix2pixHD.eval_iou import label_accuracy_score
-    _,_,iou,_,_=label_accuracy_score(label_targets, label_preds, n_class)
-    print(f'===> iou score:{iou:.4f}')
-
-    model_seg.train()
-    model_G.train()
-    return fid,iou
-
-def label_nums(data_loader,label_num=5): # 遍历dataloader，计算其所有图像中分割GT各label的pix总数
-    ret=[]
-    for i in range(label_num):
-        ret.append(0)
-    for step, sample in enumerate(data_loader):
-        seg=sample["seg"]
-        for i in range(label_num):
-            ret[i]+=(seg==i).sum().item()
-    return ret
 
 
 
@@ -142,297 +171,286 @@ def train(args, get_dataloader_func=get_pix2pix_maps_dataloader):
     with open(os.path.join(args.save,'args.json'), 'w') as f:
         json.dump(vars(args), f)
     logger = Logger(save_path=args.save, json_name='img2map_seg')
-    epoch_now = len(logger.get_data('FOCAL_loss'))
+    epoch_now = len(logger.get_data('D_loss'))
 
     model_saver = ModelSaver(save_path=args.save,
-                             name_list=['G', 'D', 'G_optimizer', 'D_optimizer',
-                                        'G_scheduler', 'D_scheduler','DLV3P',"DLV3P_global_optimizer",
-                                        "DLV3P_backbone_optimizer","DLV3P_global_scheduler","DLV3P_backbone_scheduler"])
+                             name_list=['G1', 'D1', 'G1_optimizer', 'D1_optimizer',
+                                        'G1_scheduler', 'D1_scheduler',
+                                        'G2', 'D2', 'G2_optimizer', 'D2_optimizer',
+                                        'G2_scheduler', 'D2_scheduler',
+                                        'G3', 'D3', 'G3_optimizer', 'D3_optimizer',
+                                        'G3_scheduler', 'D3_scheduler'])
 
     sw = SummaryWriter(args.tensorboard_path)
 
 
-    G = get_G(args,input_nc=3+256) # 3+256+1，256为分割网络输出featuremap的通道数
-    D = get_D(args)
-    model_saver.load('G', G)
-    model_saver.load('D', D)
+    G1 = get_G(args,input_nc=6) # 3+256+1，256为分割网络输出featuremap的通道数
+    D1 = get_D(args,input_nc=6)
+    model_saver.load('G1', G1)
+    model_saver.load('D1', D1)
+    G2 = get_G(args,input_nc=6) # 3+256+1，256为分割网络输出featuremap的通道数
+    D2 = get_D(args,input_nc=6)
+    model_saver.load('G2', G2)
+    model_saver.load('D2', D2)
+    G3 = get_G(args,input_nc=6) # 3+256+1，256为分割网络输出featuremap的通道数
+    D3 = get_D(args,input_nc=6)
+    model_saver.load('G3', G3)
+    model_saver.load('D3', D3)
+    G_all = [G1,G2,G3]
+    D_all = [D1,D2,D3]
 
     cfg=Configuration()
     cfg.MODEL_NUM_CLASSES=args.label_nc
-    DLV3P=deeplabv3plus(cfg)
-    if args.gpu:
-        # DLV3P=nn.DataParallel(DLV3P)
-        DLV3P=DLV3P.cuda()
-    model_saver.load('DLV3P', DLV3P)
 
-    G_optimizer = Adam(G.parameters(), lr=args.G_lr, betas=(args.beta1, 0.999))
-    D_optimizer = Adam(D.parameters(), lr=args.D_lr, betas=(args.beta1, 0.999))
 
-    seg_global_params, seg_backbone_params=DLV3P.get_paras()
-    DLV3P_global_optimizer = torch.optim.Adam([{'params': seg_global_params, 'initial_lr': args.seg_lr_global}], lr=args.seg_lr_global,betas=(args.beta1, 0.999))
-    DLV3P_backbone_optimizer = torch.optim.Adam([{'params': seg_backbone_params, 'initial_lr': args.seg_lr_backbone}], lr=args.seg_lr_backbone, betas=(args.beta1, 0.999))
+    G1_optimizer = Adam(G1.parameters(), lr=args.G_lr, betas=(args.beta1, 0.999))
+    D1_optimizer = Adam(D1.parameters(), lr=args.D_lr, betas=(args.beta1, 0.999))
+    G2_optimizer = Adam(G2.parameters(), lr=args.G_lr, betas=(args.beta1, 0.999))
+    D2_optimizer = Adam(D2.parameters(), lr=args.D_lr, betas=(args.beta1, 0.999))
+    G3_optimizer = Adam(G3.parameters(), lr=args.G_lr, betas=(args.beta1, 0.999))
+    D3_optimizer = Adam(D3.parameters(), lr=args.D_lr, betas=(args.beta1, 0.999))
 
-    model_saver.load('G_optimizer', G_optimizer)
-    model_saver.load('D_optimizer', D_optimizer)
-    model_saver.load('DLV3P_global_optimizer', DLV3P_global_optimizer)
-    model_saver.load('DLV3P_backbone_optimizer', DLV3P_backbone_optimizer)
+    model_saver.load('G1_optimizer', G1_optimizer)
+    model_saver.load('D1_optimizer', D1_optimizer)
+    model_saver.load('G2_optimizer', G2_optimizer)
+    model_saver.load('D2_optimizer', D2_optimizer)
+    model_saver.load('G3_optimizer', G3_optimizer)
+    model_saver.load('D3_optimizer', D3_optimizer)
 
-    G_scheduler = get_hinge_scheduler(args, G_optimizer)
-    D_scheduler = get_hinge_scheduler(args, D_optimizer)
-    DLV3P_global_scheduler=torch.optim.lr_scheduler.LambdaLR(DLV3P_global_optimizer, lr_lambda=lambda epoch:(1 - epoch/args.epochs)**0.9,last_epoch=epoch_now)
-    DLV3P_backbone_scheduler = torch.optim.lr_scheduler.LambdaLR(DLV3P_backbone_optimizer,lr_lambda=lambda epoch: (1 - epoch / args.epochs) ** 0.9,last_epoch=epoch_now)
+    G_optimizer_all = [G1_optimizer,G2_optimizer,G3_optimizer]
+    D_optimizer_all = [D1_optimizer,D2_optimizer,D3_optimizer]
 
-    model_saver.load('G_scheduler', G_scheduler)
-    model_saver.load('D_scheduler', D_scheduler)
-    model_saver.load('DLV3P_global_scheduler', DLV3P_global_scheduler)
-    model_saver.load('DLV3P_backbone_scheduler', DLV3P_backbone_scheduler)
+    G1_scheduler = get_hinge_scheduler(args, G1_optimizer)
+    D1_scheduler = get_hinge_scheduler(args, D1_optimizer)
+    G2_scheduler = get_hinge_scheduler(args, G2_optimizer)
+    D2_scheduler = get_hinge_scheduler(args, D2_optimizer)
+    G3_scheduler = get_hinge_scheduler(args, G3_optimizer)
+    D3_scheduler = get_hinge_scheduler(args, D3_optimizer)
+
+    model_saver.load('G1_scheduler', G1_scheduler)
+    model_saver.load('D1_scheduler', D1_scheduler)
+    model_saver.load('G2_scheduler', G2_scheduler)
+    model_saver.load('D2_scheduler', D2_scheduler)
+    model_saver.load('G3_scheduler', G3_scheduler)
+    model_saver.load('D3_scheduler', D3_scheduler)
+    G_scheduler_all = [G1_scheduler,G2_scheduler,G3_scheduler]
+    D_scheduler_all = [D1_scheduler,D2_scheduler,D3_scheduler]
+
 
     device = get_device(args)
 
-    GANLoss = get_GANLoss(args)
+    GANLoss1 = get_GANLoss(args)
+    GANLoss2 = get_GANLoss(args)
+    GANLoss3 = get_GANLoss(args)
+    GANLoss_all = [GANLoss1,GANLoss2,GANLoss3]
     if args.use_ganFeat_loss:
-        DFLoss = get_DFLoss(args)
+        DFLoss1 = get_DFLoss(args)
+        DFLoss2 = get_DFLoss(args)
+        DFLoss3 = get_DFLoss(args)
+        DFLoss_all = [DFLoss1,DFLoss2,DFLoss3]
     if args.use_vgg_loss:
-        VGGLoss = get_VGGLoss(args)
+        VGGLoss1 = get_VGGLoss(args)
+        VGGLoss2 = get_VGGLoss(args)
+        VGGLoss3 = get_VGGLoss(args)
+        VGGLoss_all = [VGGLoss1,VGGLoss2,VGGLoss3]
     if args.use_low_level_loss:
-        LLLoss = get_low_level_loss(args)
-
-    # CE_loss=nn.CrossEntropyLoss(ignore_index=255)
-    LVS_loss = lovasz_softmax
-    data_loader_focal = get_dataloader_func(args, train=True)
-    data_loader_focal = tqdm(data_loader_focal)
-    alpha = label_nums(data_loader_focal,label_num=args.label_nc)
-    # alpha = [1,1,1,1,1]
-    tmp_min = min(alpha)
-    assert tmp_min > 0
-    for i in range(len(alpha)):
-        alpha[i] = tmp_min / alpha[i]
-    if args.focal_alpha_revise:
-        assert len(args.focal_alpha_revise) == len(alpha)
-        for i in range(len(alpha)):
-            alpha[i]=alpha[i]*args.focal_alpha_revise[i]
-    print(alpha)
-    FOCAL_loss = FocalLoss(gamma=2, alpha=alpha)
+        LLLoss1 = get_low_level_loss(args)
+        LLLoss2 = get_low_level_loss(args)
+        LLLoss3 = get_low_level_loss(args)
+        LLLoss_all = [LLLoss1,LLLoss2,LLLoss3]
 
 
-    if epoch_now==args.epochs:
+
+    if epoch_now==args.epochs or args.epochs==-1:
         print('get final models')
-        iou = eval_fidiou(args,model_G=G, model_seg=DLV3P,data_loader=get_pix2pix_maps_dataloader(args, train=False))
-        logger.log(key='iou', data=iou)
-        if iou < logger.get_max(key='FID'):
-            model_saver.save(f'DLV3P_{iou:.4f}', DLV3P)
-        sw.add_scalar('eval/iou', iou, epoch_now)
+        eval_fidiou(args, sw=sw, model_G=G_all)
 
+    total_steps=0
     for epoch in range(epoch_now, args.epochs):
-        G_loss_list = []
-        D_loss_list = []
-        # CE_loss_list = []
-        LVS_loss_list=[]
-        FOCAL_loss_list=[]
+        G_loss_list = [[],[],[]]
+        D_loss_list = [[],[],[]]
 
-        data_loader = get_dataloader_func(args, train=True)
-        data_loader = tqdm(data_loader)
 
-        for step, sample in enumerate(data_loader):
-            # 先训练deeplabv3+
-            imgs_seg = sample['A_seg'].to(device)  # (shape: (batch_size, 3, img_h, img_w))
-            label_imgs = sample['seg'].type(torch.LongTensor).to(device)  # (shape: (batch_size, img_h, img_w))
-            # print(label_imgs)
-            # print(label_imgs.max())
-            # print(label_imgs.min())
-
-            # imgs_show=sample['A'].to(device) # (shape: (batch_size, 3, img_h, img_w))
-            # maps_show= sample['B'].to(device)  # (shape: (batch_size, 3, img_h, img_w))
-
-            outputs,feature_map = DLV3P(imgs_seg)  # (shape: (batch_size, num_classes, img_h, img_w))
-            # feature_map=feature_map.detach()
-
-            # compute the loss:
-            # ce_loss = CE_loss(outputs, label_imgs)
-            # ce_loss_value = ce_loss.data.cpu().numpy()
-            soft_outputs = torch.nn.functional.softmax(outputs, dim=1)
-            lvs_loss = LVS_loss(soft_outputs, label_imgs, ignore=255)
-            lvs_loss_value = lvs_loss.data.cpu().numpy()
-            focal_loss=FOCAL_loss(outputs,label_imgs)
-            focal_loss_value=focal_loss.data.cpu().numpy()
-
-            seg_loss = (focal_loss+lvs_loss)*0.5
-
-            # optimization step:
-            # DLV3P_global_optimizer.zero_grad()  # (reset gradients)
-            # DLV3P_backbone_optimizer.zero_grad()
-            # seg_loss.backward()  # (compute gradients)
-            # DLV3P_global_optimizer.step()  # (perform optimization step)
-            # DLV3P_backbone_optimizer.step()
-
-            # 然后训练GAN
-            imgs = sample['A'].to(device)
-            maps = sample['B'].to(device)
-            id_layer_np = []
-            im_path = sample['A_paths']
-            for i in range(args.batch_size):
-                num_layer=int(im_path[i].split(os.sep)[-2])
-                id_layer_np.append(np.full((1,args.fineSize,args.fineSize),num_layer))
-
-            # for i in range(args.batch_size):
-            #     num_layer = int(im_path[i].split("/")[-2])
-            #     id_layer_np.append(np.full((1,args.fineSize,args.fineSize),num_layer))
-            # feature_map=feature_map.detach()
-            imgs_plus_old = torch.cat((imgs,feature_map),1) # bs*(3+256)*h*w
-            id_layer = torch.from_numpy(np.array(id_layer_np)).to(device)
-            # print(id_layer.shape)
-            imgs_plus = torch.cat((imgs_plus_old,id_layer.float()),1)
-            # train the Discriminator
-            D_optimizer.zero_grad()
-            reals_maps = torch.cat([imgs.float(), maps.float(), id_layer.float()], dim=1)
-            # reals_maps = torch.cat([imgs.float(), maps.float()], dim=1)
-
-            fakes = G(imgs_plus).detach()
-            fakes_maps = torch.cat([imgs.float(), fakes.float(), id_layer.float()], dim=1)
-            # fakes_maps = torch.cat([imgs.float(), fakes.float()], dim=1)
-
-            D_real_outs = D(reals_maps)
-            D_real_loss = GANLoss(D_real_outs, True)
-
-            D_fake_outs = D(fakes_maps)
-            D_fake_loss = GANLoss(D_fake_outs, False)
-
-            D_loss = 0.5 * (D_real_loss + D_fake_loss)
-            D_loss = D_loss.mean()
-            D_loss.backward()
-            D_loss = D_loss.item()
-            D_optimizer.step()
-
-            # train generator and encoder
-            # G_optimizer.zero_grad()
-            fakes = G(imgs_plus)
-            fakes_maps = torch.cat([imgs.float(), fakes.float(), id_layer.float()], dim=1)
-            # fakes_maps = torch.cat([imgs.float(), fakes.float()], dim=1)
-            D_fake_outs = D(fakes_maps)
-
-            gan_loss = GANLoss(D_fake_outs, True)
-
-            G_loss = 0
-            G_loss += gan_loss
-            gan_loss = gan_loss.mean().item()
-
-            if args.use_vgg_loss:
-                vgg_loss = VGGLoss(fakes, imgs)
-                G_loss += args.lambda_feat * vgg_loss
-                vgg_loss = vgg_loss.mean().item()
+        for layer in range(args.layer_num):
+            # start from layer_num
+            id_layer = args.layer_num - layer
+            if layer == 0:
+                before_img_path = os.path.join(args.dataroot, "train", "A", str(id_layer))
+                after_img_path = os.path.join(args.dataroot, "train", "B", str(id_layer))
+                if not os.path.exists(after_img_path):
+                    os.mkdir(after_img_path)
+                img_list = make_dataset(before_img_path)
+                for img_before in tqdm(img_list):
+                    img_name = os.path.split(img_before)[1]
+                    img_after = os.path.join(after_img_path,img_name)
+                    shutil.copy(img_before,img_after)
             else:
-                vgg_loss = 0.
 
-            if args.use_ganFeat_loss:
-                df_loss = DFLoss(D_fake_outs, D_real_outs)
-                G_loss += args.lambda_feat * df_loss
-                df_loss = df_loss.mean().item()
-            else:
-                df_loss = 0.
+                data_loader = get_inter1_dataloader(args, id_layer, train=True)
+                data_loader = tqdm(data_loader)
 
-            if args.use_low_level_loss:
-                ll_loss = LLLoss(fakes, maps)
-                G_loss += args.lambda_feat * ll_loss
-                ll_loss = ll_loss.mean().item()
-            else:
-                ll_loss = 0.
+                for step, sample in enumerate(data_loader):
+                    total_steps=total_steps+1
+                    layer_imgs = sample['A'].to(device)
+                    final_before_img = sample['B'].to(device)
+                    target_layer_img = sample['C'].to(device)
 
-            G_loss = G_loss.mean()
-            G_seg_loss =G_loss+seg_loss
-            G_loss = G_loss.item()
-            seg_loss=seg_loss.item()
+                    # print(id_layer.shape)
+                    imgs_plus = torch.cat((layer_imgs.float(),final_before_img.float()),1)
+                    # train the Discriminator
+                    D_optimizer_all[layer-1].zero_grad()
+                    reals_maps = torch.cat([layer_imgs.float(), target_layer_img.float(), ], dim=1)
+                    # reals_maps = torch.cat([imgs.float(), maps.float()], dim=1)
 
-            G_optimizer.zero_grad()
-            DLV3P_global_optimizer.zero_grad()  # (reset gradients)
-            DLV3P_backbone_optimizer.zero_grad()
-            G_seg_loss.backward()
-            G_optimizer.step()
-            DLV3P_global_optimizer.step()  # (perform optimization step)
-            DLV3P_backbone_optimizer.step()
+                    fakes = G_all[layer-1](imgs_plus).detach()
 
-            data_loader.write(f'Epochs:{epoch}  | Dloss:{D_loss:.6f} | Gloss:{G_loss:.6f}'
-                              f'| GANloss:{gan_loss:.6f} | VGGloss:{vgg_loss:.6f} | DFloss:{df_loss:.6f} '
-                              f'| LLloss:{ll_loss:.6f} | lr_gan:{get_lr(G_optimizer):.8f}'
-                              f'| FOCAL_loss:{focal_loss_value:.6f}|LVS_loss:{lvs_loss_value:.6f} '
-                              f'| lr_global:{get_lr(DLV3P_global_optimizer):.8f}| lr_backbone:{get_lr(DLV3P_backbone_optimizer):.8f}')
+                    fake_dir = os.path.join(args.dataroot, "train", "B", str(id_layer))
+                    if not os.path.exists(fake_dir):
+                        os.mkdir(fake_dir)
+                    batch_size = layer_imgs.size(0)
+                    im_name = sample['A_path']
+                    for b in range(batch_size):
+                        file_name = osp.split(im_name[b])[-1].split('.')[0]
+                        fake_file = osp.join(fake_dir, f'{file_name}.png')
+                        from_std_tensor_save_image(filename=fake_file, data=fakes[b].cpu())
 
-            G_loss_list.append(G_loss)
-            D_loss_list.append(D_loss)
-            # CE_loss_list.append(ce_loss_value)
-            LVS_loss_list.append(lvs_loss_value)
-            FOCAL_loss_list.append(focal_loss_value)
+                    fakes_maps = torch.cat([layer_imgs.float(), fakes.float(), ], dim=1)
+                    # fakes_maps = torch.cat([imgs.float(), fakes.float()], dim=1)
 
-            # tensorboard log
-            if args.tensorboard_log and step % args.tensorboard_log == 0:  # defalut is 5
-                total_steps = epoch * len(data_loader) + step
-                sw.add_scalar('Loss1/G', G_loss, total_steps)
-                sw.add_scalar('Loss1/seg', seg_loss, total_steps)
-                sw.add_scalar('Loss1/G_seg', G_seg_loss, total_steps)
-                sw.add_scalar('Loss/G', G_loss, total_steps)
-                sw.add_scalar('Loss/D', D_loss, total_steps)
-                sw.add_scalar('Loss/gan', gan_loss, total_steps)
-                sw.add_scalar('Loss/vgg', vgg_loss, total_steps)
-                sw.add_scalar('Loss/df', df_loss, total_steps)
-                sw.add_scalar('Loss/ll', ll_loss, total_steps)
-                # sw.add_scalar('Loss/CE', ce_loss_value, total_steps)
-                sw.add_scalar('Loss/LVS', lvs_loss_value, total_steps)
-                sw.add_scalar('Loss/focal', focal_loss_value, total_steps)
-                sw.add_scalar('LR/G', get_lr(G_optimizer), total_steps)
-                sw.add_scalar('LR/D', get_lr(D_optimizer), total_steps)
-                sw.add_scalar('LR/global_seg', get_lr(DLV3P_global_optimizer), total_steps)
-                sw.add_scalar('LR/backbone_seg', get_lr(DLV3P_backbone_optimizer), total_steps)
+                    D_real_outs = D_all[layer-1](reals_maps)
+                    D_real_loss = GANLoss_all[layer-1](D_real_outs, True)
 
-                sw.add_image('img2/realA', tensor2im(imgs.data), total_steps, dataformats='HWC')
-                sw.add_image('img2/fakeB', tensor2im(fakes.data), total_steps, dataformats='HWC')
-                sw.add_image('img2/realB', tensor2im(maps.data), total_steps, dataformats='HWC')
-                tmpsegmap = pred2gray(outputs)
-                tmpsegmap = tmpsegmap[0].data.numpy()
-                tmpsegmap = gray2rgb(tmpsegmap)
-                sw.add_image('img2/fake_segB', tmpsegmap, total_steps, dataformats='HWC')
-                tmpsegmap = label_imgs[0].data.cpu().numpy()
-                tmpsegmap = gray2rgb(tmpsegmap)
-                sw.add_image('img2/real_segB', tmpsegmap, total_steps, dataformats='HWC')
+                    D_fake_outs = D_all[layer-1](fakes_maps)
+                    D_fake_loss = GANLoss_all[layer-1](D_fake_outs, False)
 
-        D_scheduler.step(epoch)
-        G_scheduler.step(epoch)
-        DLV3P_global_scheduler.step()
-        DLV3P_backbone_scheduler.step()
-        if epoch % 10 == 0 or epoch == (args.epochs-1):
-            import copy
-            args2=copy.deepcopy(args)
-            args2.batch_size=args.batch_size_eval
-            fid,iou = eval_fidiou(args,model_G=G, model_seg=DLV3P,data_loader=get_pix2pix_maps_dataloader(args2, train=False))
-            logger.log(key='FID', data=fid)
-            logger.log(key='iou', data=iou)
-            # if fid < logger.get_max(key='FID'):
-            #     model_saver.save(f'G_{fid:.4f}', G)
-            #     model_saver.save(f'D_{fid:.4f}', D)
-            #     model_saver.save(f'DLV3P_{iou:.4f}', DLV3P)
-            sw.add_scalar('eval/fid', fid, epoch)
-            sw.add_scalar('eval/iou', iou, epoch)
+                    D_loss = 0.5 * (D_real_loss + D_fake_loss)
+                    D_loss = D_loss.mean()
+                    D_loss.backward()
+                    D_loss = D_loss.item()
+                    D_optimizer_all[layer-1].step()
 
-        logger.log(key='D_loss', data=sum(D_loss_list) / float(len(D_loss_list)))
-        logger.log(key='G_loss', data=sum(G_loss_list) / float(len(G_loss_list)))
-        # logger.log(key='CE_loss', data=sum(CE_loss_list) / float(len(CE_loss_list)))
-        logger.log(key='LVS_loss', data=sum(LVS_loss_list) / float(len(LVS_loss_list)))
-        logger.log(key='FOCAL_loss', data=sum(FOCAL_loss_list) / float(len(FOCAL_loss_list)))
+                    # train generator and encoder
+                    # G_optimizer.zero_grad()
+                    fakes = G_all[layer-1](imgs_plus)
+
+
+                    fakes_maps = torch.cat([layer_imgs.float(), fakes.float()], dim=1)
+                    # fakes_maps = torch.cat([imgs.float(), fakes.float()], dim=1)
+                    D_fake_outs = D_all[layer-1](fakes_maps)
+
+                    gan_loss = GANLoss_all[layer-1](D_fake_outs, True)
+
+                    G_loss = 0
+                    G_loss += gan_loss
+                    gan_loss = gan_loss.mean().item()
+
+                    if args.use_vgg_loss:
+                        vgg_loss = VGGLoss_all[layer-1](fakes, layer_imgs)
+                        G_loss += args.lambda_feat * vgg_loss
+                        vgg_loss = vgg_loss.mean().item()
+                    else:
+                        vgg_loss = 0.
+
+                    if args.use_ganFeat_loss:
+                        df_loss = DFLoss_all[layer-1](D_fake_outs, D_real_outs)
+                        G_loss += args.lambda_feat * df_loss
+                        df_loss = df_loss.mean().item()
+                    else:
+                        df_loss = 0.
+
+                    if args.use_low_level_loss:
+                        ll_loss = LLLoss_all[layer-1](fakes, target_layer_img)
+                        G_loss += args.lambda_feat * ll_loss
+                        ll_loss = ll_loss.mean().item()
+                    else:
+                        ll_loss = 0.
+
+                    G_loss = G_loss.mean()
+                    G_optimizer_all[layer-1].zero_grad()
+                    G_loss.backward()
+
+                    G_optimizer_all[layer-1].step()
+
+                    G_loss = G_loss.item()
+
+                    data_loader.write(f'Epochs:{epoch}  | Dloss:{D_loss:.6f} | Gloss:{G_loss:.6f}'
+                                      f'| GANloss:{gan_loss:.6f} | VGGloss:{vgg_loss:.6f} | DFloss:{df_loss:.6f} '
+                                      f'| LLloss:{ll_loss:.6f} | lr_gan:{get_lr(G_optimizer_all[layer-1]):.8f}')
+
+                    G_loss_list[layer-1].append(G_loss)
+                    D_loss_list[layer-1].append(D_loss)
+
+
+                    # tensorboard log
+                    if args.tensorboard_log and step % args.tensorboard_log == 0:  # defalut is 5
+                        # total_steps = epoch * len(data_loader) + step
+                        # sw.add_scalar('Loss1/G', G_loss, total_steps)
+                        sw.add_scalar('Loss/G'+str(layer), G_loss, total_steps)
+                        sw.add_scalar('Loss/D'+str(layer), D_loss, total_steps)
+                        sw.add_scalar('Loss/gan'+str(layer), gan_loss, total_steps)
+                        sw.add_scalar('Loss/vgg'+str(layer), vgg_loss, total_steps)
+                        sw.add_scalar('Loss/df'+str(layer), df_loss, total_steps)
+                        sw.add_scalar('Loss/ll'+str(layer), ll_loss, total_steps)
+
+                        sw.add_scalar('LR/G'+str(layer), get_lr(G_optimizer_all[layer-1]), total_steps)
+                        sw.add_scalar('LR/D'+str(layer), get_lr(D_optimizer_all[layer-1]), total_steps)
+
+
+                        sw.add_image('img2/A', tensor2im(layer_imgs.data), total_steps, dataformats='HWC')
+                        sw.add_image('img2/B', tensor2im(final_before_img.data), total_steps, dataformats='HWC')
+
+
+                        sw.add_image('img2/C', tensor2im(target_layer_img.data), total_steps, dataformats='HWC')
+                        sw.add_image('img2/fake', tensor2im(fakes.data), total_steps, dataformats='HWC')
+            D_scheduler_all[layer-1].step(epoch)
+            G_scheduler_all[layer-1].step(epoch)
+
+        # D_scheduler.step(epoch)
+        # G_scheduler.step(epoch)
+
+
+
+
+        logger.log(key='D1_loss', data=sum(D_loss_list[0]) / float(len(D_loss_list[0])))
+        logger.log(key='G1_loss', data=sum(G_loss_list[0]) / float(len(G_loss_list[0])))
+        logger.log(key='D2_loss', data=sum(D_loss_list[1]) / float(len(D_loss_list[1])))
+        logger.log(key='G2_loss', data=sum(G_loss_list[1]) / float(len(G_loss_list[1])))
+        logger.log(key='D3_loss', data=sum(D_loss_list[2]) / float(len(D_loss_list[2])))
+        logger.log(key='G3_loss', data=sum(G_loss_list[2]) / float(len(G_loss_list[2])))
+
         logger.save_log()
         # logger.visualize()
 
-        model_saver.save('G', G)
-        model_saver.save('D', D)
-        model_saver.save('DLV3P', DLV3P)
+        model_saver.save('G1', G_all[0])
+        model_saver.save('D1', D_all[0])
+        model_saver.save('G2', G_all[1])
+        model_saver.save('D2', D_all[1])
+        model_saver.save('G3', G_all[2])
+        model_saver.save('D3', D_all[2])
+        # model_saver.save('DLV3P', DLV3P)
 
-        model_saver.save('G_optimizer', G_optimizer)
-        model_saver.save('D_optimizer', D_optimizer)
-        model_saver.save('DLV3P_global_optimizer', DLV3P_global_optimizer)
-        model_saver.save('DLV3P_backbone_optimizer', DLV3P_backbone_optimizer)
+        model_saver.save('G1_optimizer', G_optimizer_all[0])
+        model_saver.save('D1_optimizer', D_optimizer_all[0])
+        model_saver.save('G2_optimizer', G_optimizer_all[1])
+        model_saver.save('D2_optimizer', D_optimizer_all[1])
+        model_saver.save('G3_optimizer', G_optimizer_all[2])
+        model_saver.save('D3_optimizer', D_optimizer_all[2])
 
-        model_saver.save('G_scheduler', G_scheduler)
-        model_saver.save('D_scheduler', D_scheduler)
-        model_saver.save('DLV3P_global_scheduler', DLV3P_global_scheduler)
-        model_saver.save('DLV3P_backbone_scheduler', DLV3P_backbone_scheduler)
 
+        model_saver.save('G1_scheduler', G_scheduler_all[0])
+        model_saver.save('D1_scheduler', D_scheduler_all[0])
+        model_saver.save('G2_scheduler', G_scheduler_all[1])
+        model_saver.save('D2_scheduler', D_scheduler_all[1])
+        model_saver.save('G3_scheduler', G_scheduler_all[2])
+        model_saver.save('D3_scheduler', D_scheduler_all[2])
+
+
+
+        if epoch == (args.epochs - 1) or (epoch % 10 == 0):
+            import copy
+            args2=copy.deepcopy(args)
+            args2.batch_size=args.batch_size_eval
+            eval_fidiou(args, sw=sw, model_G=G_all, epoch=epoch)
 
 
 if __name__ == '__main__':

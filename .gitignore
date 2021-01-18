@@ -3,3 +3,5 @@
 /src/pix2pixHD/*.log
 /src/pix2pixHD/save_old_file
 /src/pix2pixHD/xception_pytorch_imagenet.pth
+.idea
+/src/pix2pixHD/*.sh
