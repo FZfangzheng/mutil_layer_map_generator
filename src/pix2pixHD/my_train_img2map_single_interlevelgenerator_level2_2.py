@@ -45,6 +45,7 @@ from src.pix2pixHD.myutils import pred2gray, gray2rgb
 from src.pix2pixHD.deeplabv3plus.focal_loss import FocalLoss
 from evaluation.fid.fid_score import fid_score
 import json
+from src.eval.eval_every10epoch import eval_epoch
 
 IMG_EXTENSIONS = [
     '.jpg', '.JPG', '.jpeg', '.JPEG',
@@ -63,24 +64,38 @@ def make_dataset(dir):
         for fname in fnames:
             if is_image_file(fname):
                 path = os.path.join(root, fname)
+
                 images.append(path)
+    # print(len(images))
     return images
 
 
-def eval_fidiou(args, model_G):
+def eval_fidiou(args, sw, model_G, epoch=-1):
+    fake_dir = osp.join(args.save, 'fake_result')
+    real_dir = osp.join(args.save, 'real_result')
+    eval_dir = osp.join(args.save, 'eval_result')
+    create_dir(fake_dir)
+    create_dir(real_dir)
+    create_dir(eval_dir)
     for layer in range(args.layer_num):
         # start from layer_num
         id_layer = args.layer_num - layer
         if layer == 0:
+            real_img_path = os.path.join(real_dir, str(id_layer))
             before_img_path = os.path.join(args.dataroot, "test", "A", str(id_layer))
             after_img_path = os.path.join(args.dataroot, "test", "B", str(id_layer))
-            if not os.path.exists(after_img_path):
-                os.mkdir(after_img_path)
+            gt_img_path = os.path.join(args.dataroot, "test", "C", str(id_layer))
+            create_dir(after_img_path)
+            create_dir(real_img_path)
+
             img_list = make_dataset(before_img_path)
             for img_before in img_list:
                 img_name = os.path.split(img_before)[1]
                 img_after = os.path.join(after_img_path, img_name)
+                img_real = os.path.join(real_img_path, img_name)
+                img_gt = os.path.join(gt_img_path, img_name)
                 shutil.copy(img_before, img_after)
+                shutil.copy(img_gt, img_real)
         else:
             data_loader = get_inter1_dataloader(args, id_layer, train=False)
             data_loader = tqdm(data_loader)
@@ -88,14 +103,16 @@ def eval_fidiou(args, model_G):
             device = get_device(args)
             model_G = model_G.to(device)
 
-            fake_dir = osp.join(args.save, 'fake_result')
+
+            real_img_dir = os.path.join(real_dir, str(id_layer))
             test_B_dir = os.path.join(args.dataroot, "test", "B", str(id_layer))
-            create_dir(fake_dir)
             create_dir(test_B_dir)
+            create_dir(real_img_dir)
 
             for i, sample in enumerate(data_loader):
                 layer_imgs = sample['A'].to(device)
                 final_before_img = sample['B'].to(device)
+                gt_imgs = sample['C'].to(device)
 
                 imgs_plus = torch.cat((layer_imgs.float(), final_before_img.float()), 1)
                 fakes = model_G(imgs_plus).detach()
@@ -104,23 +121,26 @@ def eval_fidiou(args, model_G):
                 im_name = sample['A_path']
                 for b in range(batch_size):
                     file_name = osp.split(im_name[b])[-1].split('.')[0]
-                    fake_file = osp.join(fake_dir, f'{file_name}.png')
+                    real_file = osp.join(real_img_dir, f'{file_name}.png')
                     test_B_file = osp.join(test_B_dir, f'{file_name}.png')
-                    from_std_tensor_save_image(filename=fake_file, data=fakes[b].cpu())
                     from_std_tensor_save_image(filename=test_B_file, data=fakes[b].cpu())
+                    from_std_tensor_save_image(filename=real_file, data=gt_imgs[b].cpu())
     for layer in range(args.layer_num):
         # start from layer_num
         id_layer = layer + 1
         if layer == 0:
+            fake_dir = osp.join(args.save, 'fake_result', str(id_layer))
             before_img_path = os.path.join(args.dataroot, "test", "B", str(id_layer))
             after_img_path = os.path.join(args.dataroot, "test", "B1", str(id_layer))
-            if not os.path.exists(after_img_path):
-                os.mkdir(after_img_path)
+            create_dir(fake_dir)
+            create_dir(after_img_path)
             img_list = make_dataset(before_img_path)
             for img_before in tqdm(img_list):
                 img_name = os.path.split(img_before)[1]
                 img_after = os.path.join(after_img_path, img_name)
+                img_fake = os.path.join(fake_dir, img_name)
                 shutil.copy(img_before, img_after)
+                shutil.copy(img_before, img_fake)
         else:
             data_loader = get_inter1_dataloader(args, id_layer, train=False, flag=1)
             data_loader = tqdm(data_loader)
@@ -128,7 +148,7 @@ def eval_fidiou(args, model_G):
             # device = get_device(args)
             # model_G = model_G.to(device)
 
-            fake_dir = osp.join(args.save, 'fake_result')
+            fake_dir = osp.join(args.save, 'fake_result', str(id_layer))
             test_B_dir = os.path.join(args.dataroot, "test", "B1", str(id_layer))
             create_dir(fake_dir)
             create_dir(test_B_dir)
@@ -148,6 +168,42 @@ def eval_fidiou(args, model_G):
                     test_B_file = osp.join(test_B_dir, f'{file_name}.png')
                     from_std_tensor_save_image(filename=fake_file, data=fakes[b].cpu())
                     from_std_tensor_save_image(filename=test_B_file, data=fakes[b].cpu())
+
+    real_img_list = make_dataset(real_dir)
+    fake_img_list = make_dataset(fake_dir)
+    assert len(real_img_list) == len(fake_img_list)
+    new_fake_dir = osp.join(args.save, 'fake_result_without_layer')
+    new_real_dir = osp.join(args.save, 'real_result_without_layer')
+    create_dir(new_fake_dir)
+    create_dir(new_real_dir)
+    for real_img in real_img_list:
+        img_name = osp.split(real_img)[-1]
+        new_real_img_path = osp.join(new_real_dir, img_name)
+        shutil.copy(real_img, new_real_img_path)
+    for fake_img in fake_img_list:
+        img_name = osp.split(fake_img)[-1]
+        new_fake_img_path = osp.join(new_fake_dir, img_name)
+        shutil.copy(fake_img, new_fake_img_path)
+
+    real_paths = [osp.join(real_dir,"1"),osp.join(real_dir,"2"),osp.join(real_dir,"3"),osp.join(real_dir,"4")]
+    fake_paths = [osp.join(fake_dir, "1"), osp.join(fake_dir, "2"), osp.join(fake_dir, "3"), osp.join(fake_dir, "4")]
+
+    rets = eval_epoch(real_paths,fake_paths,epoch, eval_dir)
+    if epoch != -1:
+        sw.add_scalar('eval/kid_mean', rets.kid_mean, int(epoch/10))
+        sw.add_scalar('eval/fid', rets.fid, int(epoch / 10))
+        sw.add_scalar('eval/kNN', rets.kNN, int(epoch / 10))
+        sw.add_scalar('eval/K_MMD', rets.K_MMD, int(epoch / 10))
+        sw.add_scalar('eval/WD', rets.WD, int(epoch / 10))
+        sw.add_scalar('eval/_IS', rets._IS, int(epoch/10))
+        sw.add_scalar('eval/_MS', rets._MS, int(epoch / 10))
+        sw.add_scalar('eval/_mse_skimage', rets._mse_skimage, int(epoch / 10))
+        sw.add_scalar('eval/_ssim_skimage', rets._ssim_skimage, int(epoch / 10))
+        sw.add_scalar('eval/_ssimrgb_skimage', rets._ssimrgb_skimage, int(epoch / 10))
+        sw.add_scalar('eval/_psnr_skimage', rets._psnr_skimage, int(epoch / 10))
+        sw.add_scalar('eval/_kid_std', rets._kid_std, int(epoch / 10))
+        sw.add_scalar('eval/_fid_inkid_mean', rets._fid_inkid_mean, int(epoch / 10))
+        sw.add_scalar('eval/_fid_inkid_std', rets._fid_inkid_std, int(epoch / 10))
     model_G.train()
 
 
@@ -197,7 +253,7 @@ def train(args, get_dataloader_func=get_pix2pix_maps_dataloader):
 
     if epoch_now == args.epochs or args.epochs == -1:
         print('get final models')
-        eval_fidiou(args, model_G=G)
+        eval_fidiou(args, sw=sw, model_G=G)
 
     total_steps = 0
     for epoch in range(epoch_now, args.epochs):
@@ -489,11 +545,11 @@ def train(args, get_dataloader_func=get_pix2pix_maps_dataloader):
         model_saver.save('D_scheduler', D_scheduler)
 
 
-        if epoch == (args.epochs - 1):
+        if epoch == (args.epochs - 1) or (epoch % 10 == 0):
             import copy
             args2 = copy.deepcopy(args)
             args2.batch_size = args.batch_size_eval
-            eval_fidiou(args, model_G=G)
+            eval_fidiou(args, sw=sw, model_G=G, epoch=epoch)
 
 
 if __name__ == '__main__':
