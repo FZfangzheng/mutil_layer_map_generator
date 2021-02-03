@@ -8,8 +8,10 @@ import numpy as np
 '''该脚本将rgb图的某个特定颜色转换为另一个特定颜色，目前主要是将黄色道路转为白色（黄色视觉效果太晃眼）'''
 
 
-old_rgb = np.array([255, 242, 175])
-new_rgb = np.array([255, 255, 255])
+# old_rgb = np.array([255, 242, 175])
+# new_rgb = np.array([255, 255, 255])
+new_rgb = np.array([255, 242, 175])
+old_rgb = np.array([255, 255, 255])
 
 IMG_EXTENSIONS = [
     '.jpg', '.JPG', '.jpeg', '.JPEG',
@@ -69,9 +71,8 @@ def make_change_img(dir_old, dir_new):
 if __name__ == "__main__":
     flag = 1
     # 首先解析文件路径
-    path_old = r"D:\map_translate\看看效果\0503TW16_1708图_纯p2pHD，epoch200\real_seg"
+    path_old = r"/data/multilayer_map_project/new_data/map"
     # path_new = r"D:\map_translate\看看效果\0426TW16_1708图_celvs,epoch200\real_seg_new"
     path_new = path_old+'_new'
-
     make_change_img(path_old, path_new)
     print("finish!")

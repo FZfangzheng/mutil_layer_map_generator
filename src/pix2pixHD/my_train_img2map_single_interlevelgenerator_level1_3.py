@@ -35,6 +35,7 @@ from PIL import Image
 from src.pix2pixHD.deeplabv3plus.deeplabv3plus import Configuration
 from src.pix2pixHD.deeplabv3plus.deeplabv3plus.my_deeplabv3plus_featuremap import deeplabv3plus
 import torch.nn.functional as F
+from src.pytorch_ssim import SSIM
 
 from src.pix2pixHD.deeplabv3plus.lovasz_losses import lovasz_softmax
 
@@ -344,6 +345,13 @@ def train(args, get_dataloader_func=get_pix2pix_maps_dataloader):
                         ll_loss = ll_loss.mean().item()
                     else:
                         ll_loss = 0.
+                    if args.use_ssim_loss:
+                        ssim_loss_f = SSIM(window_size = 11)
+                        ssim_loss = -ssim_loss_f(fakes,target_layer_img)
+                        G_loss += ssim_loss
+                        ssim_loss = ssim_loss.mean().item()
+                    else:
+                        ssim_loss=0
 
                     G_loss = G_loss.mean()
                     G_optimizer.zero_grad()
@@ -355,7 +363,7 @@ def train(args, get_dataloader_func=get_pix2pix_maps_dataloader):
 
                     data_loader.write(f'Epochs:{epoch}  | Dloss:{D_loss:.6f} | Gloss:{G_loss:.6f}'
                                       f'| GANloss:{gan_loss:.6f} | VGGloss:{vgg_loss:.6f} | DFloss:{df_loss:.6f} '
-                                      f'| LLloss:{ll_loss:.6f} | lr_gan:{get_lr(G_optimizer):.8f}')
+                                      f'| LLloss:{ll_loss:.6f} | lr_gan:{get_lr(G_optimizer):.8f} | ssim_loss:{ssim_loss:.4f}')
 
                     G_loss_list.append(G_loss)
                     D_loss_list.append(D_loss)
@@ -371,6 +379,7 @@ def train(args, get_dataloader_func=get_pix2pix_maps_dataloader):
                         sw.add_scalar('Loss/vgg', vgg_loss, total_steps)
                         sw.add_scalar('Loss/df', df_loss, total_steps)
                         sw.add_scalar('Loss/ll', ll_loss, total_steps)
+                        sw.add_scalar('Loss/ssim', ssim_loss, total_steps)
 
                         sw.add_scalar('LR/G', get_lr(G_optimizer), total_steps)
                         sw.add_scalar('LR/D', get_lr(D_optimizer), total_steps)
@@ -406,6 +415,16 @@ def train(args, get_dataloader_func=get_pix2pix_maps_dataloader):
 
         model_saver.save('G_scheduler', G_scheduler)
         model_saver.save('D_scheduler', D_scheduler)
+        if epoch==49:
+            model_saver.save('G_50', G)
+            model_saver.save('D_50', D)
+            # model_saver.save('DLV3P', DLV3P)
+
+            model_saver.save('G_optimizer_50', G_optimizer)
+            model_saver.save('D_optimizer_50', D_optimizer)
+
+            model_saver.save('G_scheduler_50', G_scheduler)
+            model_saver.save('D_scheduler_50', D_scheduler)
 
 
         if epoch == (args.epochs - 1) or (epoch % 10 == 0):

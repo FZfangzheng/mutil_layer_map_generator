@@ -175,10 +175,18 @@ class AlignedDataset_Inter1(BaseDataset):
         self.dir_A = os.path.join(opt.dataroot, opt.phase, "A", str(id_layer))
         self.dir_B = os.path.join(opt.dataroot, opt.phase, "B", str(id_layer+1))
         self.dir_C = os.path.join(opt.dataroot, opt.phase, "C", str(id_layer))
+        self.dir_RS = os.path.join(opt.dataroot, opt.phase, "RS", str(id_layer))
+        self.dir_Seg = os.path.join(opt.dataroot, opt.phase, "Seg", str(id_layer))
 
 
         self.A_paths = sorted(make_dataset(self.dir_A))
         self.C_paths = sorted(make_dataset(self.dir_C))
+        if os.path.exists(self.dir_RS):
+            self.RS_paths = sorted(make_dataset(self.dir_RS))
+            self.Seg_paths = sorted(make_dataset(self.dir_Seg))
+        else:
+            self.RS_paths = []
+            self.Seg_paths = []
 
         transform_list = [transforms.ToTensor(),  # Totensor操作会将img/ndarray转化至0~1的FloatTensor
                           transforms.Normalize((0.5, 0.5, 0.5),
@@ -191,10 +199,33 @@ class AlignedDataset_Inter1(BaseDataset):
 
         A_path = self.A_paths[index]
         C_path = self.C_paths[index]
+        if self.RS_paths:
+            RS_path = self.RS_paths[index]
+            RS = Image.open(RS_path).convert('RGB')
+            RS = self.transform(RS)
+
+            seg_path = self.Seg_paths[index]
+            seg = Image.open(seg_path)
+
+            seg = np.asarray(seg)
+            seg = torch.from_numpy(seg)  # H W
+            # print(seg.shape)
+
+            # deeplabv3相关-为迎合使用的pretrain模型，需将标准化参数改为ImageNet版本
+            toseg_transform_list = [transforms.Normalize((0, 0, 0), (2, 2, 2)),  # mean ,std;  result=(x-mean)/std
+                                    transforms.Normalize((-0.5, -0.5, -0.5), (1, 1, 1)),
+                                    transforms.Normalize((0.485, 0.456, 0.406),
+                                                         ((0.229, 0.224, 0.225)))]  # 恢复标准化前的数值，并换一组数据标准化
+            toseg_transform = transforms.Compose(toseg_transform_list)
+            RS_seg = toseg_transform(RS)  # 送往分割
+
         A = Image.open(A_path).convert('RGB')
         C = Image.open(C_path).convert('RGB')
+
         A = self.transform(A)
         C = self.transform(C)
+
+
 
         img_name = os.path.split(A_path)[1]
         img_name_split = img_name.split("_")
@@ -225,8 +256,10 @@ class AlignedDataset_Inter1(BaseDataset):
                             str(self.id_layer) + "_" + str(index_x) + "_" + str(index_y)) + ".png")
 
         B = self.transform(B)
-
-        return {'A': A, 'B': B, 'C':C, 'A_path': A_path, 'C_path': C_path}
+        if self.RS_paths:
+            return {'A': A, 'B': B, 'C':C, 'A_path': A_path, 'C_path': C_path, 'RS':RS_seg, 'seg':seg}
+        else:
+            return {'A': A, 'B': B, 'C': C, 'A_path': A_path, 'C_path': C_path}
 
     def __len__(self):
         return len(self.A_paths)

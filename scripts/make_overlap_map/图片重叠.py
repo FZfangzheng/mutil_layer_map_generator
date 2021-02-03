@@ -41,7 +41,7 @@ def make_flod_img(dir_A,dir_B,dir_AB):
     imgs_B=make_dataset(dir_B)
     for img_A in tqdm(imgs_A):
         img_inner=get_inner_path(img_A,dir_A)
-        img_B= os.path.join(dir_B,os.path.splitext(img_inner)[0]+'.tif')
+        img_B= os.path.join(dir_B,os.path.splitext(img_inner)[0]+'.png')
         if img_B in imgs_B:
             photo_A=cv2.imdecode(np.fromfile(img_A,dtype=np.uint8),-1)
             photo_B=cv2.imdecode(np.fromfile(img_B,dtype=np.uint8),-1)
@@ -60,9 +60,9 @@ if __name__=="__main__":
     flag=1
     #首先解析文件路径
 
-    path_a=r"D:\map_translate\数据集\SH分析\SH18\质量较好\map_test"
-    path_b = r"D:\map_translate\数据集\SH分析\SH18\质量较好\rs_test"
-    path_new=r"D:\map_translate\数据集\SH分析\SH18\质量较好\floder——test"
+    path_a=r"/data/multilayer_map_project/new_data/rs"
+    path_b = r"/data/multilayer_map_project/new_data/map_new"
+    path_new=r"/data/multilayer_map_project/new_data/overlap"
     # path=r"D:\map_translate\数据集\WH16分析"
     # path_a=os.path.join(path,r'origin\A')
     # path_b = os.path.join(path, r'seg_red\rgb')

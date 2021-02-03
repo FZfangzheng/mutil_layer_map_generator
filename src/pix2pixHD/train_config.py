@@ -180,7 +180,7 @@ def config():
 
     parser.add_argument('--use_ganFeat_loss', default=1, type=int,
                         help='if true, use discriminator feature matching loss')
-
+    parser.add_argument('--use_ssim_loss', default=1, type=int, help='if use ssim loss')
     parser.add_argument('--use_vgg_loss', default=1, type=int,
                         help='if true, use VGG feature matching loss')
     parser.add_argument('--vgg_type', default='vgg16', choices=['vgg16', 'vgg19'],

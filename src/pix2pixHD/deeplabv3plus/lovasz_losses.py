@@ -203,13 +203,18 @@ def flatten_probas(probas, labels, ignore=None):
     """
     Flattens predictions in the batch
     """
+    # print("probas1:{}".format(probas.shape))
+    # print("labels1:{}".format(labels.shape))
     if probas.dim() == 3:
         # assumes output of a sigmoid layer
         B, H, W = probas.size()
         probas = probas.view(B, 1, H, W)
+        # print("probas2:{}".format(probas.shape))
     B, C, H, W = probas.size()
     probas = probas.permute(0, 2, 3, 1).contiguous().view(-1, C)  # B * H * W, C = P, C
+    # print("probas3:{}".format(probas.shape))
     labels = labels.view(-1)
+    # print("labels2:{}".format(labels.shape))
     if ignore is None:
         return probas, labels
     valid = (labels != ignore)

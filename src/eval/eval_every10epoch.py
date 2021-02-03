@@ -140,4 +140,4 @@ def eval_epoch(real_paths,fake_paths,epoch, path):
         for col in range(1,len(titles)+1):
             sh.cell(row=row, column=col, value='' if titles[col-1]=='' else eval('rets[i].'+titles[col-1]))
         wb.save(score_xlsxname)
-        return rets
+    return rets

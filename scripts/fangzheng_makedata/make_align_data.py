@@ -3,6 +3,8 @@ import os
 from PIL import ImageFile
 import shutil
 import math
+import numpy as np
+import torch
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 Image.MAX_IMAGE_PIXELS = None
 
@@ -29,9 +31,10 @@ def make_inter_dataset():
     pt=[[224,39],[195,79],[138,157],[23,312]]
     h=256
     w=256
-    image_dir_path = r"/data/multilayer_map_project/rs_repaint_for_show"
+    image_dir_path = r"/data/multilayer_map_project/seg_repaint_for_show"
     #image_dir_path = r"/data/multilayer_map_project/out_mutil_layer_mix4_70_50epoch/newfake_result_for_show"
-    id_layer=["14all","15all","16all","17all"]
+    id_layer=["14all","15all","16all"]
+    # id_layer=["14all","15all","16all","17all"]
     for i in range(len(id_layer)):
         img_path = os.path.join(image_dir_path,id_layer[i],"all.png")
         img = Image.open(img_path)
@@ -46,10 +49,10 @@ def make_inter_dataset():
             for n in range(len_y):
                 box = (pt[i][0]+w*m, pt[i][1]+h*n, pt[i][0]+w*(m+1), pt[i][1]+h*(n+1))
                 region = img.crop(box)
-                region.save('/data/multilayer_map_project/align_data/all_data/RS_O/{}_{}_{}.png'.format(i+1,m+1,n+1))
+                region.save('/data/multilayer_map_project/align_data1_2/all_data/Seg/{}_{}_{}.png'.format(i+1,m+1,n+1))
                 print('{},{}'.format(m,n))
 def make_final_inter_dataset(path=""):
-    path = r"/data/multilayer_map_project/align_data/all_data/RS_O"
+    path = r"/data/multilayer_map_project/align_data1_2/all_data/Seg"
     img_list = make_dataset(path)
     for img in img_list:
         img_name = os.path.split(img)[-1]
@@ -62,9 +65,9 @@ def make_final_inter_dataset(path=""):
         print(new_img_path)
 
 def make_train_test():
-    path=r"/data/multilayer_map_project/align_data/all_data/C"
-    path_train = r"/data/multilayer_map_project/align_data/train/C"
-    path_test = r"/data/multilayer_map_project/align_data/test/C"
+    path=r"/data/multilayer_map_project/align_data1_2/all_data/Seg"
+    path_train = r"/data/multilayer_map_project/align_data1_2/all_data/train_seg/Seg"
+    path_test = r"/data/multilayer_map_project/align_data1_2/all_data/test_seg/Seg"
 
     layer="1"
     path1=os.path.join(path,layer)
@@ -102,18 +105,18 @@ def make_train_test():
             shutil.copy(img, os.path.join(path_test1,img_name))
         else:
             shutil.copy(img, os.path.join(path_train1, img_name))
-    layer="4"
-    path1=os.path.join(path,layer)
-    path_train1=os.path.join(path_train,layer)
-    path_test1=os.path.join(path_test,layer)
-    img_list = make_dataset(path1)
-    for img in img_list:
-        img_name = os.path.split(img)[1]
-        x_line = int(img_name.split("_")[1])
-        if x_line >=105:
-            shutil.copy(img, os.path.join(path_test1,img_name))
-        else:
-            shutil.copy(img, os.path.join(path_train1, img_name))
+    # layer="4"
+    # path1=os.path.join(path,layer)
+    # path_train1=os.path.join(path_train,layer)
+    # path_test1=os.path.join(path_test,layer)
+    # img_list = make_dataset(path1)
+    # for img in img_list:
+    #     img_name = os.path.split(img)[1]
+    #     x_line = int(img_name.split("_")[1])
+    #     if x_line >=105:
+    #         shutil.copy(img, os.path.join(path_test1,img_name))
+    #     else:
+    #         shutil.copy(img, os.path.join(path_train1, img_name))
 
 def test_merge():
     id_layer=3
@@ -150,9 +153,17 @@ def test_merge():
     B = B.resize((size, size), Image.ANTIALIAS)
     B.save(os.path.join(answer_dir,
                         str(id_layer) + "_" + str(index_x) + "_" + str(index_y)) + ".png")
+def test_seg(path):
+    seg = Image.open(path)
+
+    seg = np.asarray(seg)
+    seg = torch.from_numpy(seg)  # H W
+    print(seg.shape)
 if __name__ == '__main__':
     # test_merge()
-    #make_inter_dataset()
-    make_final_inter_dataset()
+    # make_inter_dataset()
+    # make_final_inter_dataset()
     # make_train_test()
     #make_final_inter_dataset("/data/multilayer_map_project/inter1_2/fake_result")
+    test_seg("/data/multilayer_map_project/align_data1_6/train/Seg/1/1_1_1.png")
+    # test_seg("/data/multilayer_map_project/seg_repaint_for_show/14/13712/2669.png")
